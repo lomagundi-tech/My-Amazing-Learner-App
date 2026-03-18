@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { QUIZ_QUESTIONS } from '../data/quizData'
-import { addStar, earnBadge, incrementCorrect, getCorrectCount, markLevelComplete } from '../utils/storage'
+import { addStar, earnBadge, incrementCorrect, getCorrectCount, markLevelComplete, getLevelsCompleted } from '../utils/storage'
 import { launchConfetti } from '../utils/confetti'
 
 export function useQuiz(onStarsChange, onBadgesChange) {
@@ -36,7 +36,6 @@ export function useQuiz(onStarsChange, onBadgesChange) {
 
       // Level completion badge
       markLevelComplete(level)
-      const { getLevelsCompleted } = require('../utils/storage')
       const completed = getLevelsCompleted()
       if (completed.length >= 3) {
         if (earnBadge('rainbow_reader')) { launchConfetti(); onBadgesChange() }
