@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { MARKET_STATS, MARKET_GAPS } from '../data/marketData'
 import { getTodaysChallenge } from '../data/dailyChallenges'
 import { addStar, hasAnsweredTodaysChallenge, setDailyChallengedDate } from '../utils/storage'
+import ComingSoonModal from './ComingSoonModal'
 
 export default function HomePanel({ mode, onTabChange, childName, stars, streak, onStarsChange }) {
   const isChild = mode === 'child'
@@ -33,7 +34,6 @@ function DailyChallenge({ mode, onStarsChange }) {
   }
 
   const correct = selected === challenge.answer
-  const wrong   = selected && !correct
 
   return (
     <div style={dc.card}>
@@ -71,6 +71,120 @@ function DailyChallenge({ mode, onStarsChange }) {
             : (isChild ? `Not quite — the answer was ${challenge.answer} 💛` : `The answer was ${challenge.answer}.`)}
         </p>
       )}
+    </div>
+  )
+}
+
+/* ── Pricing ─────────────────────────────────────────────────── */
+const PLANS = [
+  {
+    id: 'free',
+    name: 'Free',
+    price: '£0',
+    period: 'forever',
+    colour: 'var(--mint)',
+    features: [
+      'All 7 learning panels',
+      'Daily challenge questions',
+      'Sparky AI tutor (10 msgs/day)',
+      'Quiz – Budding level',
+      'Basic progress tracking',
+      '6 SEN accessibility tools',
+    ],
+    cta: 'Get Started Free',
+    ctaStyle: 'outline',
+  },
+  {
+    id: 'amazing',
+    name: 'AMAZING',
+    price: '£4.99',
+    period: '/mo  ·  or £39.99/yr',
+    colour: 'var(--violet)',
+    recommended: true,
+    features: [
+      'Everything in Free',
+      'Unlimited Sparky AI conversations',
+      'Full quiz bank — all 3 levels',
+      'Printable progress reports',
+      'Mood trend analytics',
+      'Early access to new features',
+    ],
+    cta: 'Start Free Trial',
+    ctaStyle: 'primary',
+  },
+  {
+    id: 'family',
+    name: 'AMAZING Family',
+    price: '£7.99',
+    period: '/mo  ·  or £59.99/yr',
+    colour: 'var(--gold)',
+    features: [
+      'Everything in AMAZING',
+      'Up to 4 child profiles',
+      'Family progress dashboard',
+      'Exclusive craft pack downloads',
+      'Priority support',
+    ],
+    cta: 'Best for Families',
+    ctaStyle: 'gold',
+  },
+]
+
+function PricingSection({ onTabChange }) {
+  const [modalTier, setModalTier] = useState(null)
+
+  function handleCta(plan) {
+    if (plan.id === 'free') {
+      onTabChange(2) // go to quiz/activities
+    } else {
+      setModalTier(plan.name)
+    }
+  }
+
+  return (
+    <div>
+      {modalTier && <ComingSoonModal tier={modalTier} onClose={() => setModalTier(null)} />}
+      <h3 style={{ ...s.sectionTitle, color: 'var(--plum)' }}>Simple, Honest Pricing</h3>
+      <p style={{ ...s.intro, marginBottom: '20px' }}>Start free. Upgrade when you&apos;re ready.</p>
+      <div style={p.grid}>
+        {PLANS.map((plan) => (
+          <div
+            key={plan.id}
+            className="card"
+            style={{
+              ...p.card,
+              borderTop: `4px solid ${plan.colour}`,
+              ...(plan.recommended ? p.cardRecommended : {}),
+            }}
+          >
+            {plan.recommended && (
+              <div style={p.recommendedBadge}>⭐ Recommended</div>
+            )}
+            <h4 style={{ ...p.planName, color: plan.colour === 'var(--gold)' ? '#b8860b' : plan.colour }}>
+              {plan.name}
+            </h4>
+            <div style={p.priceRow}>
+              <span style={p.priceNum}>{plan.price}</span>
+              <span style={p.pricePeriod}>{plan.period}</span>
+            </div>
+            <ul style={p.featureList}>
+              {plan.features.map((f) => (
+                <li key={f} style={p.featureItem}>
+                  <span style={{ color: plan.colour === 'var(--gold)' ? '#b8860b' : plan.colour }} aria-hidden="true">✓</span>
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={() => handleCta(plan)}
+              className={plan.ctaStyle === 'primary' ? 'btn btn-primary' : plan.ctaStyle === 'gold' ? 'btn btn-gold' : 'btn btn-outline'}
+              style={p.ctaBtn}
+            >
+              {plan.cta}
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -137,6 +251,9 @@ function ParentHome({ onTabChange, childName, stars, streak, onStarsChange }) {
           ))}
         </div>
       </div>
+
+      {/* Pricing */}
+      <PricingSection onTabChange={onTabChange} />
 
       {/* Shop Banner */}
       <div style={s.shopBanner}>
@@ -245,6 +362,28 @@ const s = {
   },
   activityLabel: { fontFamily: "'Baloo 2', cursive", fontWeight: 700, fontSize: '1rem' },
   activityDesc: { fontSize: '0.8rem', opacity: 0.9 },
+}
+
+const p = {
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px' },
+  card: { display: 'flex', flexDirection: 'column', gap: '0', position: 'relative', padding: '28px 24px 24px' },
+  cardRecommended: {
+    boxShadow: '0 0 0 2px var(--violet), var(--shadow-card)',
+    transform: 'translateY(-4px)',
+  },
+  recommendedBadge: {
+    position: 'absolute', top: '-1px', right: '20px',
+    background: 'var(--violet)', color: '#fff',
+    fontSize: '0.65rem', fontWeight: 700, padding: '4px 10px',
+    borderRadius: '0 0 8px 8px', letterSpacing: '0.03em',
+  },
+  planName: { fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: '1.1rem', marginBottom: '8px' },
+  priceRow: { display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '20px' },
+  priceNum: { fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: '2rem', color: 'var(--text-dark)' },
+  pricePeriod: { fontSize: '0.75rem', color: 'var(--text-mid)', lineHeight: 1.4 },
+  featureList: { listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: '10px', flex: 1 },
+  featureItem: { display: 'flex', gap: '8px', fontSize: '0.875rem', color: 'var(--text-dark)', alignItems: 'flex-start', lineHeight: 1.4 },
+  ctaBtn: { width: '100%', minHeight: '48px', fontSize: '0.95rem', marginTop: 'auto' },
 }
 
 const dc = {
