@@ -13,12 +13,12 @@ export default function Hero({ mode }) {
     >
       <div className="container" style={styles.inner}>
         <span style={styles.icon} aria-hidden="true">
-          {isChild ? '⭐' : '📚'}
+          {isChild ? '🚀' : '🔭'}
         </span>
         <div>
           <h1 style={styles.headline}>
             {isChild
-              ? 'Time to be an Amazing Learner! ⭐'
+              ? 'Time to be an Amazing Learner! 🚀'
               : 'Inspire, Track & Empower Every Learner'}
           </h1>
           <p style={styles.sub}>

@@ -2,7 +2,7 @@ export default function QuizPanel({ mode }) {
   return (
     <div className="panel-enter" style={styles.wrapper}>
       <div style={styles.card}>
-        <span style={styles.avatar} aria-hidden="true">🎯</span>
+        <span style={styles.avatar} aria-hidden="true">🧩</span>
         <h2 style={styles.title}>Activities & Quiz</h2>
         <p style={styles.desc}>
           {mode === 'child'

@@ -91,18 +91,18 @@ function ParentHome({ onTabChange }) {
 
 function ChildHome({ onTabChange }) {
   const activities = [
-    { label: '🤖 Chat with Sparky', tab: 1, bg: 'var(--violet)', desc: 'Ask me anything!' },
-    { label: '🎯 Play a Quiz',      tab: 2, bg: 'var(--coral)',  desc: 'Win stars and badges!' },
-    { label: '📊 See Progress',     tab: 3, bg: 'var(--mint)',   desc: 'Watch your bars grow!' },
-    { label: '🎨 Try a Craft',      tab: 4, bg: 'var(--gold)',   desc: 'Make something amazing!' },
-    { label: '⭐ My Rewards',       tab: 5, bg: 'var(--plum)',   desc: 'Collect all 8 badges!' },
-    { label: '💙 SEN Tools',        tab: 6, bg: 'var(--sky)',    desc: 'Learning your way!' },
+    { label: '🔮 Chat with Sparky', tab: 1, bg: 'var(--violet)', desc: 'Ask me anything!' },
+    { label: '🧩 Play a Quiz',      tab: 2, bg: 'var(--coral)',  desc: 'Win medals and badges!' },
+    { label: '🌱 See Progress',     tab: 3, bg: 'var(--mint)',   desc: 'Watch yourself grow!' },
+    { label: '🪡 Try a Craft',      tab: 4, bg: 'var(--gold)',   desc: 'Make something amazing!' },
+    { label: '🎖️ My Rewards',      tab: 5, bg: 'var(--plum)',   desc: 'Collect all 8 badges!' },
+    { label: '🌈 SEN Tools',        tab: 6, bg: 'var(--sky)',    desc: 'Learning your way!' },
   ]
 
   return (
     <div style={styles.section}>
       <div style={styles.childWelcome}>
-        <span style={styles.childEmoji} aria-hidden="true">🌟</span>
+        <span style={styles.childEmoji} aria-hidden="true">🦄</span>
         <h2 style={{ ...styles.heading, color: 'var(--coral)' }}>
           Hi there, Amazing Learner!
         </h2>

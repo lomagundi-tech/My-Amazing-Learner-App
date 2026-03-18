@@ -2,7 +2,7 @@ export default function RewardsPanel({ mode }) {
   return (
     <div className="panel-enter" style={styles.wrapper}>
       <div style={styles.card}>
-        <span style={styles.avatar} aria-hidden="true">⭐</span>
+        <span style={styles.avatar} aria-hidden="true">🎖️</span>
         <h2 style={styles.title}>My Rewards</h2>
         <p style={styles.desc}>
           {mode === 'child'

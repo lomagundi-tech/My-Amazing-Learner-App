@@ -1,11 +1,11 @@
 const TABS = [
-  { id: 0, label: 'Home',       emoji: '🏠' },
-  { id: 1, label: 'AI Tutor',   emoji: '🤖' },
-  { id: 2, label: 'Activities', emoji: '🎯' },
-  { id: 3, label: 'Progress',   emoji: '📊' },
-  { id: 4, label: 'Crafts',     emoji: '🎨' },
-  { id: 5, label: 'Rewards',    emoji: '⭐' },
-  { id: 6, label: 'SEN Tools',  emoji: '💙' },
+  { id: 0, label: 'Home',       emoji: '🌻' },
+  { id: 1, label: 'AI Tutor',   emoji: '🔮' },
+  { id: 2, label: 'Activities', emoji: '🧩' },
+  { id: 3, label: 'Progress',   emoji: '🌱' },
+  { id: 4, label: 'Crafts',     emoji: '🪡' },
+  { id: 5, label: 'Rewards',    emoji: '🎖️' },
+  { id: 6, label: 'SEN Tools',  emoji: '🌈' },
 ]
 
 export default function TabNav({ activeTab, onTabChange, mode }) {

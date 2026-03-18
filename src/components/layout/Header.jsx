@@ -5,7 +5,7 @@ export default function Header({ mode, onToggle }) {
     <header style={styles.header}>
       <div className="container" style={styles.inner}>
         <div style={styles.brand}>
-          <span style={styles.starIcon} aria-hidden="true">⭐</span>
+          <span style={styles.sparkIcon} aria-hidden="true">💫</span>
           <span style={styles.wordmark}>My Amazing Learner</span>
         </div>
         <ModeToggle mode={mode} onToggle={onToggle} />
@@ -36,7 +36,7 @@ const styles = {
     gap: '10px',
     flexShrink: 0,
   },
-  starIcon: {
+  sparkIcon: {
     fontSize: '1.75rem',
     display: 'inline-block',
     animation: 'spin 6s linear infinite',

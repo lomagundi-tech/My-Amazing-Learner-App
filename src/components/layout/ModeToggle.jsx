@@ -11,7 +11,7 @@ export default function ModeToggle({ mode, onToggle }) {
           fontWeight: mode === 'parent' ? 700 : 600,
         }}
       >
-        <span aria-hidden="true">👨‍👩‍👧</span> Parent
+        <span aria-hidden="true">🦉</span> Parent
       </button>
       <button
         onClick={() => onToggle('child')}
@@ -23,7 +23,7 @@ export default function ModeToggle({ mode, onToggle }) {
           fontWeight: mode === 'child' ? 700 : 600,
         }}
       >
-        <span aria-hidden="true">⭐</span> Child
+        <span aria-hidden="true">🦋</span> Child
       </button>
     </div>
   )
