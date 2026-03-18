@@ -1,12 +1,21 @@
-// Anthropic API proxy — Phase 2 implementation
-// API key is read from process.env ONLY — never from client-side code
+/**
+ * /api/chat — Sparky AI proxy
+ *
+ * Multi-provider with automatic fallback: Anthropic → OpenAI → Gemini
+ * Smart model routing: child mode uses lighter models, parent uses smarter ones.
+ * Context trimming and token budgets are handled in aiProviders.js.
+ *
+ * API keys are read from process.env ONLY — never from client requests.
+ */
+
+import { callWithFallback } from '../../src/utils/aiProviders'
 
 const SYSTEM_PROMPTS = {
   parent: `You are Sparky, a friendly UK primary school education assistant for My Amazing Learner — a family-run business in Gosport selling laminated educational resources, velcro mats, and personalised literacy/numeracy packs for ages 3-11 (covering EYFS, KS1, KS2). Help parents understand their child's learning, suggest activities that complement physical products, explain UK curriculum expectations (EYFS, KS1, KS2), give SEN advice, and recommend relevant My Amazing Learner products. Be warm, practical, and knowledgeable. Keep responses concise and helpful.`,
   child: `You are Sparky, a super friendly learning buddy for children aged 3-11. Use simple, encouraging language. Give short, fun answers. Use emojis! Help with reading, maths, spelling, and creative activities. Be encouraging, never make the child feel bad for wrong answers. Celebrate learning!`,
 }
 
-// In-memory rate limiter (resets on cold start — sufficient for MVP)
+// In-memory rate limiter (resets on cold start — fine for MVP)
 const rateLimitMap = new Map()
 
 function checkRateLimit(ip) {
@@ -18,13 +27,11 @@ function checkRateLimit(ip) {
     rateLimitMap.set(ip, { count: 1, start: now })
     return true
   }
-
   const entry = rateLimitMap.get(ip)
   if (now - entry.start > windowMs) {
     rateLimitMap.set(ip, { count: 1, start: now })
     return true
   }
-
   if (entry.count >= maxRequests) return false
   entry.count++
   return true
@@ -33,7 +40,12 @@ function checkRateLimit(ip) {
 export default async function handler(req, res) {
   // CORS — restrict to own domain in production
   const origin = req.headers.origin
-  const allowedOrigins = ['https://app.myamazinglearner.co.uk', 'http://localhost:3000']
+  const allowedOrigins = [
+    'https://app.myamazinglearner.co.uk',
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:3002',
+  ]
   if (origin && allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin)
   }
@@ -50,39 +62,24 @@ export default async function handler(req, res) {
   }
 
   const { messages, mode } = req.body
-
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: 'Invalid request.' })
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) {
-    return res.status(500).json({ error: 'Sparky is having a nap! Try again in a moment. 😴' })
-  }
+  const systemPrompt = SYSTEM_PROMPTS[mode] ?? SYSTEM_PROMPTS.child
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: SYSTEM_PROMPTS[mode] ?? SYSTEM_PROMPTS.child,
-        messages,
-      }),
+    const result = await callWithFallback({
+      messages,
+      systemPrompt,
+      mode: mode ?? 'child',
+      env: process.env,
     })
-
-    if (!response.ok) {
-      throw new Error(`Anthropic API error: ${response.status}`)
+    return res.status(200).json({ content: result.text })
+  } catch (err) {
+    if (err.message === 'NO_PROVIDERS') {
+      return res.status(500).json({ error: 'Sparky is having a nap! Try again in a moment. 😴' })
     }
-
-    const data = await response.json()
-    return res.status(200).json({ content: data.content[0].text })
-  } catch {
     return res.status(500).json({ error: 'Sparky is having a nap! Try again in a moment. 😴' })
   }
 }
