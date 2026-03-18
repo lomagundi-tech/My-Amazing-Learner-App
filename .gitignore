@@ -71,3 +71,11 @@ dist/
 
 # Misc
 *.tsbuildinfo
+
+# Claude Code — developer-only files (not for client repo)
+CLAUDE.md
+_dev/
+
+# Confidential client documents + local notes
+*.pdf
+read
