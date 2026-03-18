@@ -85,7 +85,7 @@ function ParentHome({ onTabChange, childName, stars, streak, onStarsChange }) {
         <div style={s.welcomeTop}>
           <div>
             <h2 style={{ ...s.heading, color: 'var(--plum)' }}>
-              Welcome back{childName ? `, ${childName}&apos;s parent` : ''}! 🦉
+              Welcome back{childName ? `, ${childName}'s parent` : ''}! 🦉
             </h2>
             <p style={s.intro}>
               Track {name}&apos;s learning, chat with Sparky, and explore activities matched to their level.
