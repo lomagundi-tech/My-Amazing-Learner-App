@@ -13,7 +13,7 @@ export default function TabNav({ activeTab, onTabChange, mode }) {
 
   return (
     <nav aria-label="Main navigation" style={styles.nav}>
-      <div style={styles.track}>
+      <div style={styles.track} className="tab-track">
         {TABS.map((tab) => {
           const isActive = activeTab === tab.id
           return (
@@ -48,8 +48,9 @@ const styles = {
     borderBottom: '1px solid rgba(61,26,94,0.08)',
     background: 'rgba(255,249,240,0.85)',
     backdropFilter: 'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
     position: 'sticky',
-    top: '69px',
+    top: '76px',
     zIndex: 90,
   },
   track: {

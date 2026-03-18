@@ -6,7 +6,7 @@ export default function Header({ mode, onToggle }) {
       <div className="container" style={styles.inner}>
         <div style={styles.brand}>
           <span style={styles.sparkIcon} aria-hidden="true">💫</span>
-          <span style={styles.wordmark}>My Amazing Learner</span>
+          <span style={styles.wordmark} className="header-wordmark">My Amazing Learner</span>
         </div>
         <ModeToggle mode={mode} onToggle={onToggle} />
       </div>
@@ -21,6 +21,7 @@ const styles = {
     zIndex: 100,
     background: 'rgba(255, 249, 240, 0.92)',
     backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
     borderBottom: '1px solid rgba(61, 26, 94, 0.08)',
     padding: '12px 0',
   },

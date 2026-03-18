@@ -201,3 +201,18 @@ ul, ol {
   border: 2px solid var(--plum);
   color: var(--plum);
 }
+
+/* ============================================================
+   RESPONSIVE FIXES — Small device overrides
+   ============================================================ */
+
+/* Hide wordmark text on Samsung Galaxy (360px) and similar tight viewports.
+   The spinning logo emoji alone + mode toggle fits comfortably in 328px. */
+@media (max-width: 399px) {
+  .header-wordmark {
+    display: none;
+  }
+}
+
+/* Firefox: scrollbar may appear inside tab nav — force hidden */
+.tab-track::-webkit-scrollbar { display: none; }
