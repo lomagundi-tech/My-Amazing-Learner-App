@@ -1,32 +1,148 @@
-export default function QuizPanel({ mode }) {
+import { useQuiz } from '../hooks/useQuiz'
+import { LEVELS } from '../data/quizData'
+import { getStars } from '../utils/storage'
+import MoodCheckIn from './MoodCheckIn'
+import { useState } from 'react'
+
+export default function QuizPanel({ mode, onStarsChange, onBadgesChange }) {
+  const { level, current, selected, feedback, changeLevel, answer, next } = useQuiz(onStarsChange, onBadgesChange)
+  const [moodDone, setMoodDone] = useState(false)
+  const isChild = mode === 'child'
+  const stars = getStars()
+
+  const correctMsg = isChild
+    ? ['Amazing! 🎉', 'You got it! 🚀', 'Brilliant! 🌟', 'Superstar! 🦄'][Math.floor(Math.random() * 4)]
+    : 'Correct! Well done.'
+  const wrongMsg = isChild
+    ? "Not quite — but you\'re learning! Try the next one 💛"
+    : 'Not quite. The correct answer is highlighted below.'
+
   return (
     <div className="panel-enter" style={styles.wrapper}>
-      <div style={styles.card}>
-        <span style={styles.avatar} aria-hidden="true">🧩</span>
-        <h2 style={styles.title}>Activities & Quiz</h2>
-        <p style={styles.desc}>
-          {mode === 'child'
-            ? 'Get ready to answer questions and win stars! ⭐ Coming very soon!'
-            : 'Interactive quiz across 3 difficulty levels — Budding, Growing, Flourishing. 9 questions with star rewards. Coming in Phase 2.'}
-        </p>
-        <div style={styles.pill}>Phase 2</div>
+      {/* Mood check-in (child mode, once per day) */}
+      {isChild && !moodDone && (
+        <MoodCheckIn onDone={() => setMoodDone(true)} />
+      )}
+
+      {/* Star counter */}
+      <div style={styles.starBar}>
+        <span style={styles.starCount}>⭐ {stars} stars earned</span>
+      </div>
+
+      {/* Level selector */}
+      <div style={styles.levelRow} role="group" aria-label="Select difficulty level">
+        {LEVELS.map((l) => (
+          <button
+            key={l.id}
+            onClick={() => changeLevel(l.id)}
+            aria-pressed={level === l.id}
+            style={{
+              ...styles.levelBtn,
+              background: level === l.id ? l.colour : '#fff',
+              color: level === l.id ? '#fff' : 'var(--text-mid)',
+              borderColor: level === l.id ? l.colour : 'rgba(0,0,0,0.1)',
+            }}
+          >
+            {l.emoji} {l.label} <span style={styles.ageTag}>{l.ages}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Question card */}
+      <div style={styles.questionCard} key={current.id}>
+        <p style={styles.questionText}>{current.q}</p>
+        <div style={styles.optionsGrid}>
+          {current.options.map((opt) => {
+            let bg = '#fff'
+            let border = '2px solid rgba(0,0,0,0.1)'
+            let color = 'var(--text-dark)'
+
+            if (selected) {
+              if (opt === current.answer) {
+                bg = 'var(--mint)'; border = '2px solid var(--mint)'; color = '#fff'
+              } else if (opt === selected && opt !== current.answer) {
+                bg = 'var(--coral)'; border = '2px solid var(--coral)'; color = '#fff'
+              }
+            }
+
+            return (
+              <button
+                key={opt}
+                onClick={() => answer(opt)}
+                disabled={!!selected}
+                style={{ ...styles.optionBtn, background: bg, border, color }}
+                aria-label={`Answer: ${opt}`}
+              >
+                {opt}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Feedback */}
+        {feedback && (
+          <div style={{
+            ...styles.feedback,
+            background: feedback === 'correct' ? 'rgba(78,205,196,0.12)' : 'rgba(255,107,107,0.12)',
+            borderColor: feedback === 'correct' ? 'var(--mint)' : 'var(--coral)',
+            color: feedback === 'correct' ? '#1a6b67' : '#b22222',
+          }}>
+            {feedback === 'correct' ? correctMsg : wrongMsg}
+          </div>
+        )}
+
+        {selected && (
+          <button onClick={next} style={styles.nextBtn}>
+            Next Question →
+          </button>
+        )}
       </div>
     </div>
   )
 }
 
 const styles = {
-  wrapper: { padding: '60px 0', display: 'flex', justifyContent: 'center' },
-  card: {
-    background: '#fff', borderRadius: 'var(--radius-card)', boxShadow: 'var(--shadow-card)',
-    padding: '48px 32px', textAlign: 'center', maxWidth: '480px', width: '100%',
+  wrapper: { display: 'flex', flexDirection: 'column', gap: '20px', padding: '32px 0', maxWidth: '640px', margin: '0 auto' },
+  starBar: { textAlign: 'right' },
+  starCount: {
+    background: 'var(--gold)', color: 'var(--text-dark)',
+    padding: '6px 16px', borderRadius: 'var(--radius-pill)',
+    fontWeight: 700, fontSize: '0.875rem', fontFamily: "'Nunito', sans-serif",
   },
-  avatar: { fontSize: '3.5rem', display: 'block', marginBottom: '16px' },
-  title: { fontFamily: "'Baloo 2', cursive", fontWeight: 800, color: 'var(--coral)', fontSize: '1.75rem', marginBottom: '12px' },
-  desc: { color: 'var(--text-mid)', lineHeight: 1.7 },
-  pill: {
-    display: 'inline-block', marginTop: '20px', padding: '6px 18px',
-    background: 'var(--coral)', color: '#fff', borderRadius: 'var(--radius-pill)',
-    fontSize: '0.8rem', fontWeight: 700,
+  levelRow: { display: 'flex', gap: '10px', flexWrap: 'wrap' },
+  levelBtn: {
+    flex: 1, minWidth: '100px', padding: '10px 16px',
+    borderRadius: 'var(--radius-pill)', border: '2px solid',
+    cursor: 'pointer', fontFamily: "'Nunito', sans-serif",
+    fontWeight: 700, fontSize: '0.875rem', transition: 'all 0.2s ease',
+    minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+  },
+  ageTag: { fontSize: '0.7rem', opacity: 0.8 },
+  questionCard: {
+    background: '#fff', borderRadius: 'var(--radius-card)',
+    boxShadow: 'var(--shadow-card)', padding: '28px 24px',
+    display: 'flex', flexDirection: 'column', gap: '20px',
+  },
+  questionText: {
+    fontFamily: "'Baloo 2', cursive", fontWeight: 700,
+    fontSize: 'clamp(1.1rem, 3vw, 1.4rem)', color: 'var(--text-dark)', textAlign: 'center',
+  },
+  optionsGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' },
+  optionBtn: {
+    padding: '16px 12px', borderRadius: '14px', cursor: 'pointer',
+    fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: '1rem',
+    transition: 'all 0.2s ease', minHeight: '56px',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+  },
+  feedback: {
+    padding: '14px 20px', borderRadius: '14px', border: '2px solid',
+    fontWeight: 600, fontSize: '0.95rem', textAlign: 'center',
+  },
+  nextBtn: {
+    alignSelf: 'flex-end', padding: '12px 24px',
+    background: 'var(--plum)', color: '#fff', border: 'none',
+    borderRadius: 'var(--radius-pill)', cursor: 'pointer',
+    fontFamily: "'Nunito', sans-serif", fontWeight: 700,
+    fontSize: '0.95rem', minHeight: '44px',
   },
 }
