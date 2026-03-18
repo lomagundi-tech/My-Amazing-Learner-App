@@ -38,6 +38,9 @@ function DailyChallenge({ mode, onStarsChange }) {
   return (
     <div style={dc.card}>
       <div style={dc.badge}>✨ Daily Challenge — {challenge.subject}</div>
+      {challenge.icon && (
+        <div style={dc.iconWrap} aria-hidden="true">{challenge.icon}</div>
+      )}
       <p style={dc.question}>{challenge.q}</p>
 
       {answered && !selected ? (
@@ -391,6 +394,10 @@ const dc = {
     background: 'linear-gradient(135deg, #fff 0%, #f8f0ff 100%)',
     borderRadius: 'var(--radius-card)', boxShadow: 'var(--shadow-small)',
     padding: '24px 28px', border: '2px solid rgba(107,63,160,0.12)',
+  },
+  iconWrap: {
+    fontSize: '3.5rem', textAlign: 'center', margin: '8px 0 12px',
+    lineHeight: 1,
   },
   badge: {
     display: 'inline-block', background: 'var(--violet)', color: '#fff',
