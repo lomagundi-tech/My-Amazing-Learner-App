@@ -120,6 +120,15 @@ export function incrementCorrect() {
   set(KEYS.quizHistory, { ...current, total: (current.total ?? 0) + 1 })
 }
 
+// Subject progress — tracks correct quiz answers per subject
+// Each correct answer adds 2% to the linked progress area (floor = base pct in progressData.js)
+export function getSubjectProgress()  { return get(KEYS.progress, {}) }
+export function recordQuizAnswer(subject, correct) {
+  if (!correct || !subject) return
+  const current = getSubjectProgress()
+  set(KEYS.progress, { ...current, [subject]: (current[subject] ?? 0) + 1 })
+}
+
 export function getSenActive()        { return get(KEYS.senActive, []) }
 export function setSenActive(arr)     { set(KEYS.senActive, arr) }
 export function toggleSenTool(id) {
