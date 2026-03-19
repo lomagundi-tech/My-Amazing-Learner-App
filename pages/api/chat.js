@@ -61,12 +61,16 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: 'Sparky is having a nap! Try again in a moment. 😴' })
   }
 
-  const { messages, mode } = req.body
+  const { messages, mode, childName } = req.body
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: 'Invalid request.' })
   }
 
-  const systemPrompt = SYSTEM_PROMPTS[mode] ?? SYSTEM_PROMPTS.child
+  // Append child name to system prompt so Sparky always addresses them personally
+  let systemPrompt = SYSTEM_PROMPTS[mode] ?? SYSTEM_PROMPTS.child
+  if (childName && typeof childName === 'string' && childName.trim().length <= 20) {
+    systemPrompt += ` The child's name is ${childName.trim()}. Always address them by name.`
+  }
 
   try {
     const result = await callWithFallback({

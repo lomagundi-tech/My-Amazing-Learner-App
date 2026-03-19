@@ -2,7 +2,9 @@ import { useQuiz } from '../hooks/useQuiz'
 import { LEVELS, SUBJECTS } from '../data/quizData'
 import { getStars } from '../utils/storage'
 import MoodCheckIn from './MoodCheckIn'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+
+const CORRECT_MSGS = ['Amazing! 🎉', 'You got it! 🚀', 'Brilliant! 🌟', 'Superstar! 🦄']
 
 export default function QuizPanel({ mode, onStarsChange, onBadgesChange }) {
   const { level, subject, questions, current, selected, feedback, changeLevel, changeSubject, answer, next } = useQuiz(onStarsChange, onBadgesChange)
@@ -10,10 +12,12 @@ export default function QuizPanel({ mode, onStarsChange, onBadgesChange }) {
   const isChild = mode === 'child'
   const stars = getStars()
 
-  const CORRECT_MSGS = ['Amazing! 🎉', 'You got it! 🚀', 'Brilliant! 🌟', 'Superstar! 🦄']
-  const correctMsg = isChild
-    ? CORRECT_MSGS[Math.floor(Math.random() * CORRECT_MSGS.length)]
-    : 'Correct! Well done.'
+  // Pick a random correct message once per question — stable across re-renders
+  const correctMsgRef = useRef(CORRECT_MSGS[0])
+  if (!selected) {
+    correctMsgRef.current = CORRECT_MSGS[Math.floor(Math.random() * CORRECT_MSGS.length)]
+  }
+  const correctMsg = isChild ? correctMsgRef.current : 'Correct! Well done.'
   const wrongMsg = isChild
     ? "Not quite — but you're learning! Try the next one 💛"
     : 'Not quite. The correct answer is highlighted below.'

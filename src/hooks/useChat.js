@@ -32,7 +32,7 @@ export function useChat(childName) {
         .slice(1) // skip opening assistant message
         .map(({ role, content }) => ({ role, content }))
 
-      const reply = await sendMessage(apiMessages, mode)
+      const reply = await sendMessage(apiMessages, mode, childName)
       setMessages([...updated, { role: 'assistant', content: reply }])
     } catch (err) {
       setError("Sparky is having a nap! Try again in a moment. 😴")

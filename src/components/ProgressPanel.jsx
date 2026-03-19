@@ -216,7 +216,7 @@ export default function ProgressPanel({ mode, stars, childName }) {
           </div>
           <div style={pr.statBox}>
             <div style={pr.statNum}>{moodHistory.length}</div>
-            <div style={pr.statLbl}>Days Active 📅</div>
+            <div style={pr.statLbl}>Mood Check-ins 😊</div>
           </div>
         </div>
 
@@ -394,7 +394,7 @@ const pr = {
   badgeGrid: { display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '6px' },
   badgeItem: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '4px' },
   badgeEmoji: { fontSize: '1.2rem' },
-  badgeLabel: { fontSize: '0.55rem', textAlign: 'center', color: '#333', lineHeight: 1.2 },
+  badgeLabel: { fontSize: '0.65rem', textAlign: 'center', color: '#333', lineHeight: 1.2 },
 
   // Craft checklist
   craftList: { display: 'flex', flexDirection: 'column', gap: '4px' },

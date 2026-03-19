@@ -330,7 +330,7 @@ function ChildHome({ onTabChange, childName, stars, streak, onStarsChange }) {
     { label: '🧩 Play a Quiz',      tab: 2, bg: 'var(--coral)',  desc: 'Win medals and badges!' },
     { label: '🌱 See Progress',     tab: 3, bg: 'var(--mint)',   desc: 'Watch yourself grow!' },
     { label: '🪡 Try a Craft',      tab: 4, bg: 'var(--gold)',   desc: 'Make something amazing!' },
-    { label: '🎖️ My Rewards',      tab: 5, bg: 'var(--plum)',   desc: 'Collect all 8 badges!' },
+    { label: '🎖️ My Rewards',      tab: 5, bg: 'var(--plum)',   desc: 'Collect all 11 badges!' },
     { label: '🌈 SEN Tools',        tab: 6, bg: 'var(--sky)',    desc: 'Learning your way!' },
   ]
 
