@@ -180,139 +180,131 @@ export default function ProgressPanel({ mode, stars, childName }) {
           Full confirmed spec: Decision A (window.print), B (layout + B1/B2/B3), C (disclaimer).
           Placeholder "Email to Teacher" button included for future sprint wiring.
       ──────────────────────────────────────────────────────── */}
+      {/* ── FEATURE 8: Printable Progress Report — Certificate Edition ── */}
       <div id="print-report" className="print-only">
+        <div style={pr.cert}>
 
-        {/* HEADER */}
-        <div style={pr.header}>
-          <div style={pr.headerLogo}>
-            <span style={pr.logoEmoji} aria-hidden="true">💫</span>
-            <span style={pr.logoText}>My Amazing Learner</span>
-          </div>
-          <div style={pr.headerTitle}>Progress Report</div>
-          <div style={pr.headerDate}>{today}</div>
-        </div>
-
-        <hr style={pr.rule} />
-
-        {/* CHILD HERO — Enhancement B1: dynamic strength headline */}
-        <div style={pr.heroSection}>
-          <h1 style={pr.heroName}>{name}&apos;s Amazing Learning Journey!</h1>
-          <p style={pr.heroStrength}>{strengthHeadline}</p>
-        </div>
-
-        {/* SUMMARY STRIP */}
-        <div style={pr.summaryStrip}>
-          <div style={pr.statBox}>
-            <div style={pr.statNum}>{totalStars}</div>
-            <div style={pr.statLbl}>Stars Earned ⭐</div>
-          </div>
-          <div style={pr.statBox}>
-            <div style={pr.statNum}>{earnedBadgeCount}/11</div>
-            <div style={pr.statLbl}>Badges Collected 🏅</div>
-          </div>
-          <div style={pr.statBox}>
-            <div style={pr.statNum}>{streak}</div>
-            <div style={pr.statLbl}>Day Streak 🔥</div>
-          </div>
-          <div style={pr.statBox}>
-            <div style={pr.statNum}>{moodHistory.length}</div>
-            <div style={pr.statLbl}>Mood Check-ins 😊</div>
-          </div>
-        </div>
-
-        {/* PROGRESS BARS — greyscale-friendly print colours */}
-        <div style={pr.section}>
-          <h2 style={pr.sectionHeading}>Learning Progress</h2>
-          {progressAreas.map((area) => (
-            <div key={area.id} style={pr.barRow}>
-              <div style={pr.barMeta}>
-                <span>{area.emoji} {area.label}</span>
-                <span style={pr.barPct}>{area.pct}%</span>
-              </div>
-              <div style={pr.barTrack}>
-                <div
-                  className="print-bar-fill"
-                  style={{ ...pr.barFill, width: `${area.pct}%` }}
-                />
-              </div>
-              <div style={pr.barCurriculum}>{area.curriculum}</div>
+          {/* ── TOP HEADER BAND ── */}
+          <div style={pr.headerBand}>
+            <div style={pr.headerInner}>
+              <span style={pr.headerLogo} aria-hidden="true">💫 My Amazing Learner</span>
+              <span style={pr.headerDate}>{today}</span>
             </div>
-          ))}
-        </div>
+          </div>
 
-        {/* BADGES GRID — earned in colour (emoji + name), locked as outlines */}
-        <div style={pr.section}>
-          <h2 style={pr.sectionHeading}>Badges Collected</h2>
-          <div style={pr.badgeGrid}>
-            {BADGES.map((badge) => {
-              const isEarned = earnedBadgeIds.includes(badge.id)
-              return (
-                <div key={badge.id} style={{ ...pr.badgeItem, opacity: isEarned ? 1 : 0.35 }}>
-                  <span style={pr.badgeEmoji} aria-hidden="true">{isEarned ? badge.emoji : '○'}</span>
-                  <span style={pr.badgeLabel}>{badge.label}</span>
+          {/* ── HERO: name + stars + strength ── */}
+          <div style={pr.hero}>
+            <div style={pr.heroStars} aria-hidden="true">⭐ ⭐ ⭐ ⭐ ⭐</div>
+            <h1 style={pr.heroName}>{name}</h1>
+            <p style={pr.heroSub}>Amazing Learning Journey</p>
+            <p style={pr.heroStrength}>{strengthHeadline}</p>
+          </div>
+
+          {/* ── STATS STRIP ── */}
+          <div style={pr.statsStrip}>
+            <div style={{ ...pr.statBox, background: '#FFB347' }}>
+              <div style={pr.statNum}>{totalStars}</div>
+              <div style={pr.statLbl}>⭐ Stars</div>
+            </div>
+            <div style={{ ...pr.statBox, background: '#6B3FA0' }}>
+              <div style={pr.statNum}>{earnedBadgeCount}/11</div>
+              <div style={pr.statLbl}>🏅 Badges</div>
+            </div>
+            <div style={{ ...pr.statBox, background: '#FF6B6B' }}>
+              <div style={pr.statNum}>{streak}</div>
+              <div style={pr.statLbl}>🔥 Day Streak</div>
+            </div>
+            <div style={{ ...pr.statBox, background: '#4ECDC4' }}>
+              <div style={pr.statNum}>{moodHistory.length}</div>
+              <div style={pr.statLbl}>😊 Check-ins</div>
+            </div>
+          </div>
+
+          {/* ── TWO-COLUMN BODY ── */}
+          <div style={pr.body}>
+
+            {/* LEFT: progress bars + crafts */}
+            <div style={pr.col}>
+              <div style={pr.sectionCard}>
+                <h2 style={pr.sectionTitle}>📊 Learning Progress</h2>
+                {progressAreas.map((area) => (
+                  <div key={area.id} style={pr.barRow}>
+                    <div style={pr.barMeta}>
+                      <span style={pr.barLabel}>{area.emoji} {area.label}</span>
+                      <span style={pr.barPct}>{area.pct}%</span>
+                    </div>
+                    <div style={pr.barTrack}>
+                      <div style={{ ...pr.barFill, width: `${area.pct}%`, background: area.colour.replace('var(--mint)', '#4ECDC4').replace('var(--violet)', '#6B3FA0').replace('var(--sky)', '#A8E6CF').replace('var(--gold)', '#FFB347').replace('var(--coral)', '#FF6B6B') }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={pr.sectionCard}>
+                <h2 style={pr.sectionTitle}>🪡 Craft Checklist</h2>
+                {CRAFTS.map((craft) => {
+                  const done = craftsCompleted.includes(craft.id)
+                  return (
+                    <div key={craft.id} style={pr.craftItem}>
+                      <span style={{ ...pr.craftTick, color: done ? '#2d7a2d' : '#bbb' }} aria-hidden="true">{done ? '✅' : '○'}</span>
+                      <span style={{ ...pr.craftName, color: done ? '#1a0a2e' : '#999' }}>{craft.title}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* RIGHT: badges + Sparky */}
+            <div style={pr.col}>
+              <div style={pr.sectionCard}>
+                <h2 style={pr.sectionTitle}>🏅 Badges Collected</h2>
+                <div style={pr.badgeGrid}>
+                  {BADGES.map((badge) => {
+                    const isEarned = earnedBadgeIds.includes(badge.id)
+                    return (
+                      <div key={badge.id} style={{ ...pr.badgeItem, background: isEarned ? '#fff9ee' : '#f5f5f5', border: `2px solid ${isEarned ? '#FFB347' : '#e0e0e0'}`, opacity: isEarned ? 1 : 0.45 }}>
+                        <span style={pr.badgeEmoji} aria-hidden="true">{isEarned ? badge.emoji : '○'}</span>
+                        <span style={{ ...pr.badgeLabel, color: isEarned ? '#3D1A5E' : '#999' }}>{badge.label}</span>
+                      </div>
+                    )
+                  })}
                 </div>
-              )
-            })}
-          </div>
-        </div>
+              </div>
 
-        {/* CRAFT CHECKLIST */}
-        <div style={pr.section}>
-          <h2 style={pr.sectionHeading}>Craft Activity Checklist</h2>
-          <div style={pr.craftList}>
-            {CRAFTS.map((craft) => {
-              const done = craftsCompleted.includes(craft.id)
-              return (
-                <div key={craft.id} style={pr.craftItem}>
-                  <span style={{ ...pr.craftTick, color: done ? '#2d7a2d' : '#999' }} aria-hidden="true">
-                    {done ? '✅' : '○'}
-                  </span>
-                  <span style={{ ...pr.craftName, color: done ? '#000' : '#666' }}>
-                    {craft.title} <span style={pr.craftAge}>({craft.ages})</span>
-                  </span>
-                </div>
-              )
-            })}
+              {/* Sparky message */}
+              <div style={pr.sparkyBox}>
+                <span style={pr.sparkyIcon} aria-hidden="true">🔮</span>
+                <p style={pr.sparkyText}>{sparkyMessage}</p>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* SPARKY MESSAGE — Enhancement B2: condition-based pre-written message */}
-        <div style={pr.sparkyBox}>
-          <span style={pr.sparkyIcon} aria-hidden="true">🔮</span>
-          <p style={pr.sparkyText}>{sparkyMessage}</p>
-        </div>
-
-        {/* FOOTER: tagline + website + QR code (Enhancement B3) + disclaimer (Decision C) */}
-        <hr style={pr.rule} />
-        <div style={pr.footer}>
-          <div style={pr.footerLeft}>
-            <p style={pr.footerTagline}>Keep being an Amazing Learner!</p>
-            <p style={pr.footerSite}>myamazinglearner.co.uk</p>
-            {/* Email to Teacher — placeholder for future sprint */}
-            <button style={pr.emailTeacherBtn} disabled aria-label="Email to Teacher — coming soon">
-              📧 Email to Teacher (coming soon)
-            </button>
+          {/* ── FOOTER BAND ── */}
+          <div style={pr.footerBand}>
+            <div style={pr.footerInner}>
+              <div>
+                <p style={pr.footerTagline}>Keep being an Amazing Learner! 🚀</p>
+                <p style={pr.footerSite}>myamazinglearner.co.uk</p>
+              </div>
+              <div style={pr.footerRight}>
+                {qrDataUrl && (
+                  <img src={qrDataUrl} alt="Scan to explore resources" style={pr.qrImg} width={72} height={72} />
+                )}
+                <p style={pr.qrLabel}>Scan to explore resources</p>
+                {/* Email to Teacher — placeholder for future sprint */}
+                <button style={pr.emailTeacherBtn} disabled aria-label="Email to Teacher — coming soon">
+                  📧 Email to Teacher (coming soon)
+                </button>
+              </div>
+            </div>
           </div>
-          {/* QR code: links to collections/all — black on white, ~25mm, scannable from fridge */}
-          <div style={pr.qrWrap}>
-            {qrDataUrl && (
-              <img
-                src={qrDataUrl}
-                alt="Scan to explore our full range of learning resources"
-                style={pr.qrImg}
-                width={96}
-                height={96}
-              />
-            )}
-            <p style={pr.qrLabel}>Scan to explore our full range of learning resources</p>
-          </div>
-        </div>
 
-        {/* DISCLAIMER — Decision C: exact client-approved wording, 7pt, italic, print-only */}
-        <hr style={{ ...pr.rule, marginTop: '12px' }} />
-        <p className="print-disclaimer" style={pr.disclaimer}>
-          Progress scores reflect your child&apos;s activity within the My Amazing Learner app and are designed as a fun, encouraging learning guide. They are not a formal academic assessment and should not be used as such. For formal progress information, please speak with your child&apos;s class teacher.
-        </p>
+          {/* DISCLAIMER — Decision C: exact client-approved wording */}
+          <p className="print-disclaimer" style={pr.disclaimer}>
+            Progress scores reflect your child&apos;s activity within the My Amazing Learner app and are designed as a fun, encouraging learning guide. They are not a formal academic assessment and should not be used as such. For formal progress information, please speak with your child&apos;s class teacher.
+          </p>
+
+        </div>
       </div>
 
     </div>
@@ -356,77 +348,97 @@ const styles = {
   moodDate: { fontSize: '0.65rem', color: 'var(--text-mid)', fontWeight: 600 },
 }
 
-/* ── Print report styles ───────────────────────────────────── */
+/* ── Print report styles — Certificate Edition ─────────────── */
 const pr = {
-  // Header
-  header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' },
-  headerLogo: { display: 'flex', alignItems: 'center', gap: '6px' },
-  logoEmoji: { fontSize: '1.4rem' },
-  logoText: { fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: '1rem', color: '#3D1A5E' },
-  headerTitle: { fontFamily: "'Baloo 2', cursive", fontWeight: 700, fontSize: '1.1rem', color: '#000' },
-  headerDate: { fontSize: '0.75rem', color: '#555' },
-  rule: { border: 'none', borderTop: '1px solid #ccc', margin: '10px 0' },
+  // Outer certificate wrapper — decorative double border
+  cert: {
+    background: '#FFF9F0',
+    border: '6px solid #3D1A5E',
+    outline: '3px solid #FFB347',
+    outlineOffset: '-10px',
+    fontFamily: "'Nunito', sans-serif",
+    minHeight: '270mm',
+    display: 'flex',
+    flexDirection: 'column',
+  },
 
-  // Child hero
-  heroSection: { margin: '12px 0', textAlign: 'center' },
-  heroName: { fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: '1.4rem', color: '#3D1A5E', marginBottom: '4px' },
-  heroStrength: { fontSize: '1rem', fontWeight: 700, color: '#555', fontStyle: 'italic' },
+  // Header band — plum gradient
+  headerBand: {
+    background: 'linear-gradient(135deg, #3D1A5E 0%, #6B3FA0 100%)',
+    padding: '12px 20px',
+  },
+  headerInner: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  headerLogo: { fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: '1rem', color: '#FFB347' },
+  headerDate: { fontSize: '0.7rem', color: 'rgba(255,255,255,0.8)', fontStyle: 'italic' },
 
-  // Summary strip
-  summaryStrip: { display: 'flex', gap: '8px', margin: '12px 0' },
-  statBox: { flex: 1, border: '1px solid #ddd', borderRadius: '8px', padding: '8px', textAlign: 'center' },
-  statNum: { fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: '1.3rem', color: '#3D1A5E' },
-  statLbl: { fontSize: '0.6rem', color: '#555', marginTop: '2px' },
+  // Hero — centred, celebratory
+  hero: { textAlign: 'center', padding: '16px 20px 8px', background: '#FFF9F0' },
+  heroStars: { fontSize: '1.1rem', letterSpacing: '6px', marginBottom: '6px', color: '#FFB347' },
+  heroName: { fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: '2rem', color: '#3D1A5E', margin: '0 0 2px' },
+  heroSub: { fontFamily: "'Baloo 2', cursive", fontWeight: 700, fontSize: '0.85rem', color: '#6B3FA0', textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 6px' },
+  heroStrength: { fontSize: '0.95rem', fontWeight: 700, color: '#FF6B6B', margin: 0, fontStyle: 'italic' },
 
-  // Sections
-  section: { margin: '14px 0' },
-  sectionHeading: { fontFamily: "'Baloo 2', cursive", fontWeight: 700, fontSize: '0.9rem', color: '#3D1A5E', marginBottom: '8px', borderBottom: '1px solid #eee', paddingBottom: '4px' },
+  // Stats strip — coloured boxes
+  statsStrip: { display: 'flex', gap: '0', margin: '12px 20px' },
+  statBox: { flex: 1, borderRadius: '10px', padding: '8px 4px', textAlign: 'center', margin: '0 4px' },
+  statNum: { fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: '1.4rem', color: '#fff' },
+  statLbl: { fontSize: '0.6rem', color: 'rgba(255,255,255,0.9)', fontWeight: 700, marginTop: '2px' },
+
+  // Two-column body
+  body: { display: 'flex', gap: '12px', padding: '0 20px', flex: 1 },
+  col: { flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' },
+
+  // Section cards
+  sectionCard: { background: '#fff', borderRadius: '10px', padding: '10px 12px', border: '1px solid #ede8f5' },
+  sectionTitle: { fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: '0.85rem', color: '#3D1A5E', marginBottom: '8px', paddingBottom: '5px', borderBottom: '2px solid #FFB347' },
 
   // Progress bars
-  barRow: { marginBottom: '8px' },
-  barMeta: { display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 700, marginBottom: '3px' },
-  barPct: { color: '#555' },
-  barTrack: { height: '8px', background: '#eee', borderRadius: '4px' },
-  barFill: { height: '8px', background: '#3D1A5E', borderRadius: '4px' },
-  barCurriculum: { fontSize: '0.6rem', color: '#888', marginTop: '2px' },
-
-  // Badges grid — max 2 rows of 5-6
-  badgeGrid: { display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '6px' },
-  badgeItem: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '4px' },
-  badgeEmoji: { fontSize: '1.2rem' },
-  badgeLabel: { fontSize: '0.65rem', textAlign: 'center', color: '#333', lineHeight: 1.2 },
+  barRow: { marginBottom: '6px' },
+  barMeta: { display: 'flex', justifyContent: 'space-between', marginBottom: '3px' },
+  barLabel: { fontSize: '0.72rem', fontWeight: 700, color: '#1A0A2E' },
+  barPct: { fontSize: '0.72rem', fontWeight: 700, color: '#6B3FA0' },
+  barTrack: { height: '9px', background: '#f0eaf8', borderRadius: '5px', overflow: 'hidden' },
+  barFill: { height: '9px', borderRadius: '5px' },
 
   // Craft checklist
-  craftList: { display: 'flex', flexDirection: 'column', gap: '4px' },
-  craftItem: { display: 'flex', alignItems: 'center', gap: '8px' },
-  craftTick: { fontSize: '0.9rem', flexShrink: 0 },
-  craftName: { fontSize: '0.75rem' },
-  craftAge: { color: '#888', fontSize: '0.7rem' },
+  craftItem: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' },
+  craftTick: { fontSize: '0.85rem', flexShrink: 0 },
+  craftName: { fontSize: '0.72rem', fontWeight: 600 },
 
-  // Sparky message — Enhancement B2
+  // Badges grid
+  badgeGrid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '5px' },
+  badgeItem: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', padding: '5px 3px', borderRadius: '8px', textAlign: 'center' },
+  badgeEmoji: { fontSize: '1.3rem', lineHeight: 1 },
+  badgeLabel: { fontSize: '0.6rem', lineHeight: 1.2, fontWeight: 700 },
+
+  // Sparky message
   sparkyBox: {
-    display: 'flex', alignItems: 'flex-start', gap: '10px',
-    background: '#f5f0ff', borderRadius: '10px', padding: '12px', margin: '14px 0',
-    border: '1px solid #e0d5f5',
+    background: 'linear-gradient(135deg, #3D1A5E 0%, #6B3FA0 100%)',
+    borderRadius: '10px', padding: '12px',
+    display: 'flex', gap: '8px', alignItems: 'flex-start',
+    flex: 1,
   },
-  sparkyIcon: { fontSize: '1.3rem', flexShrink: 0 },
-  sparkyText: { fontSize: '0.8rem', lineHeight: 1.6, color: '#2a1a4a', fontStyle: 'italic' },
+  sparkyIcon: { fontSize: '1.4rem', flexShrink: 0 },
+  sparkyText: { fontSize: '0.78rem', lineHeight: 1.6, color: '#fff', fontStyle: 'italic', margin: 0 },
 
-  // Footer with QR code — Enhancement B3
-  footer: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', marginTop: '10px' },
-  footerLeft: { flex: 1 },
-  footerTagline: { fontFamily: "'Baloo 2', cursive", fontWeight: 700, fontSize: '0.85rem', color: '#3D1A5E', marginBottom: '2px' },
-  footerSite: { fontSize: '0.7rem', color: '#555', marginBottom: '6px' },
+  // Footer band — gold gradient
+  footerBand: {
+    background: 'linear-gradient(135deg, #FFB347 0%, #FFD93D 100%)',
+    padding: '10px 20px',
+    marginTop: 'auto',
+  },
+  footerInner: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' },
+  footerTagline: { fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: '0.9rem', color: '#3D1A5E', margin: '0 0 2px' },
+  footerSite: { fontSize: '0.7rem', color: '#5a3a00', fontWeight: 600, margin: 0 },
+  footerRight: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' },
+  qrImg: { display: 'block', width: '72px', height: '72px', borderRadius: '6px' },
+  qrLabel: { fontSize: '0.5rem', color: '#3D1A5E', textAlign: 'center', maxWidth: '72px', lineHeight: 1.3, margin: 0, fontWeight: 600 },
   emailTeacherBtn: {
-    fontSize: '0.65rem', padding: '4px 10px', borderRadius: '20px',
-    border: '1px solid #ccc', background: '#f5f5f5', color: '#999',
-    cursor: 'not-allowed', fontFamily: "'Nunito', sans-serif",
+    fontSize: '0.55rem', padding: '3px 8px', borderRadius: '20px',
+    border: '1px solid rgba(61,26,94,0.3)', background: 'rgba(255,255,255,0.5)',
+    color: '#3D1A5E', cursor: 'not-allowed', fontFamily: "'Nunito', sans-serif",
   },
-  qrWrap: { textAlign: 'center', flexShrink: 0 },
-  // QR: black on white only — no brand colours (client spec)
-  qrImg: { display: 'block', width: '96px', height: '96px' },
-  qrLabel: { fontSize: '0.55rem', color: '#555', marginTop: '4px', maxWidth: '96px', lineHeight: 1.3 },
 
-  // Disclaimer — Decision C: exact approved wording, 7pt italic, greyscale, below QR
-  disclaimer: { fontSize: '7pt', fontStyle: 'italic', color: '#555', lineHeight: 1.4, marginTop: '6px' },
+  // Disclaimer — Decision C: exact approved wording, 7pt italic
+  disclaimer: { fontSize: '6.5pt', fontStyle: 'italic', color: '#888', lineHeight: 1.4, padding: '6px 20px 10px', margin: 0 },
 }

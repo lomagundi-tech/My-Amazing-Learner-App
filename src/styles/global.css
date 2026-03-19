@@ -252,14 +252,12 @@ body.calm-mode * { transition-duration: 0s !important; }
 
   .print-only * {
     visibility: visible !important;
-    color: #000 !important;
-    box-shadow: none !important;
   }
 
-  .print-only .print-bar-fill {
-    /* Progress bars: use greyscale-friendly print colours */
-    print-color-adjust: exact;
-    -webkit-print-color-adjust: exact;
+  /* Force ALL brand colours to print — essential for certificate look */
+  .print-only, .print-only * {
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
   }
 
   /* Disclaimer: only visible in print (rendered via .print-only) */
