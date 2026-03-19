@@ -1,19 +1,23 @@
 const KEYS = {
-  stars:             'mal_stars',
-  badges:            'mal_badges',
-  progress:          'mal_progress',
-  quizHistory:       'mal_quiz_history',
-  mode:              'mal_mode',
-  lastVisit:         'mal_last_visit',
-  childName:         'mal_child_name',
-  streak:            'mal_streak',
-  streakDate:        'mal_streak_date',
-  moodHistory:       'mal_mood_history',
-  craftsCompleted:   'mal_crafts_completed',
-  dailyChallenged:   'mal_daily_challenge',
-  levelsCompleted:   'mal_levels_completed',
-  senActive:         'mal_sen_active',
-  senTooltipShown:   'mal_sen_tooltip_shown',
+  stars:                'mal_stars',
+  badges:               'mal_badges',
+  progress:             'mal_progress',
+  quizHistory:          'mal_quiz_history',
+  mode:                 'mal_mode',
+  lastVisit:            'mal_last_visit',
+  childName:            'mal_child_name',
+  streak:               'mal_streak',
+  streakDate:           'mal_streak_date',
+  moodHistory:          'mal_mood_history',
+  craftsCompleted:      'mal_crafts_completed',
+  dailyChallenged:      'mal_daily_challenge',
+  levelsCompleted:      'mal_levels_completed',
+  senActive:            'mal_sen_active',
+  senTooltipShown:      'mal_sen_tooltip_shown',
+  parentCompletions:    'mal_parent_completions',
+  parentVouchers:       'mal_parent_vouchers',
+  parentJointSessions:  'mal_parent_joint_sessions',
+  parentFlashcards:     'mal_parent_flashcards',
 }
 
 function get(key, fallback = null) {
@@ -142,3 +146,112 @@ export function getSenTooltipShown()  { return get(KEYS.senTooltipShown, false) 
 export function setSenTooltipShown()  { set(KEYS.senTooltipShown, true) }
 
 export { clearAll }
+
+// ── Parent Portal ──────────────────────────────────────────────
+
+export function getParentCompletions() { return get(KEYS.parentCompletions, []) }
+
+export function addParentCompletion(activityId, module) {
+  const current = getParentCompletions()
+  const now = new Date()
+  const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  set(KEYS.parentCompletions, [...current, { id: activityId, module, completedAt: now.toISOString(), month: monthKey }])
+}
+
+export function getParentMonthlyStats() {
+  const now = new Date()
+  const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const completions = getParentCompletions()
+  const thisMonth = completions.filter((c) => c.month === monthKey)
+  const jointCount = thisMonth.filter((c) => c.module === 'B').length
+  return { total: thisMonth.length, jointCount, monthKey }
+}
+
+export function hasCompletedActivityToday(activityId) {
+  const today = new Date().toDateString()
+  return getParentCompletions().some(
+    (c) => c.id === activityId && new Date(c.completedAt).toDateString() === today
+  )
+}
+
+export function getParentTier() {
+  const { total, jointCount } = getParentMonthlyStats()
+  if (total >= 20) return 4
+  if (total >= 15) return 3
+  if (total >= 10 && jointCount >= 2) return 2
+  if (total >= 5) return 1
+  return 0
+}
+
+// Vouchers
+export function getParentVouchers()  { return get(KEYS.parentVouchers, []) }
+
+export function addParentVoucher(activityId, pct, label) {
+  if (pct <= 0) return // non-discount rewards are tracked in completions only
+  const current = getParentVouchers()
+  const now = new Date()
+  const expiresAt = new Date(now.getTime() + 30 * 86400000).toISOString()
+  const suffix = Math.random().toString(36).slice(2, 6).toUpperCase()
+  const code = `MAL-${activityId.slice(0, 4).toUpperCase()}-${suffix}`
+  set(KEYS.parentVouchers, [
+    ...current,
+    { id: `v_${Date.now()}`, code, pct, label, issuedAt: now.toISOString(), expiresAt, used: false, source: activityId },
+  ])
+}
+
+export function markVoucherUsed(voucherId) {
+  const current = getParentVouchers()
+  set(KEYS.parentVouchers, current.map((v) => (v.id === voucherId ? { ...v, used: true } : v)))
+}
+
+export function getActiveVouchers() {
+  const now = new Date()
+  return getParentVouchers().filter((v) => !v.used && new Date(v.expiresAt) > now)
+}
+
+// Joint sessions
+export function getParentJointSessions() { return get(KEYS.parentJointSessions, []) }
+
+export function initiateJointSession(activityId) {
+  const current = getParentJointSessions()
+  const existing = current.find((s) => s.activityId === activityId && s.status !== 'complete')
+  if (existing) return existing
+  const session = {
+    id: `js_${Date.now()}`,
+    activityId,
+    initiatedAt: new Date().toISOString(),
+    parentDone: false,
+    childDone: false,
+    status: 'pending',
+    rewardGranted: false,
+  }
+  set(KEYS.parentJointSessions, [...current, session])
+  return session
+}
+
+export function completeJointSide(activityId, side) {
+  // side: 'parent' | 'child'
+  const current = getParentJointSessions()
+  const updated = current.map((s) => {
+    if (s.activityId !== activityId || s.status === 'complete') return s
+    const next = { ...s, [`${side}Done`]: true }
+    if (next.parentDone && next.childDone) next.status = 'complete'
+    return next
+  })
+  set(KEYS.parentJointSessions, updated)
+  return updated.find((s) => s.activityId === activityId)
+}
+
+export function getJointSession(activityId) {
+  return getParentJointSessions().find((s) => s.activityId === activityId && s.status !== 'expired') ?? null
+}
+
+// Flashcards
+export function getParentFlashcards() { return get(KEYS.parentFlashcards, []) }
+export function saveParentFlashcard(topicId, front, back) {
+  const current = getParentFlashcards()
+  set(KEYS.parentFlashcards, [...current, { id: `fc_${Date.now()}`, topicId, front, back, createdAt: new Date().toISOString() }])
+}
+export function deleteParentFlashcard(id) {
+  set(KEYS.parentFlashcards, getParentFlashcards().filter((f) => f.id !== id))
+}
