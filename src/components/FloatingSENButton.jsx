@@ -1,19 +1,205 @@
-export default function FloatingSENButton({ activeTab, onTabChange }) {
+import { useState, useEffect } from 'react'
+import { getSenActive, toggleSenTool, getSenTooltipShown, setSenTooltipShown } from '../utils/storage'
+
+const SEN_TOOLS = [
+  {
+    id: 'high_contrast',
+    label: 'High Contrast',
+    emoji: '🔆',
+    desc: 'Bold visual mode for visual processing needs.',
+    apply: (active) => {
+      document.documentElement.style.setProperty('--cream', active ? '#000' : '#FFF9F0')
+      document.documentElement.style.setProperty('--text-dark', active ? '#fff' : '#1A0A2E')
+      document.documentElement.style.setProperty('--text-mid', active ? '#eee' : '#4A3060')
+    },
+  },
+  {
+    id: 'calm_mode',
+    label: 'Calm Mode',
+    emoji: '🌿',
+    desc: 'Reduces animations and visual effects.',
+    apply: (active) => {
+      document.documentElement.style.setProperty('--transition', active ? '0s' : '0.25s ease')
+      // Blob animations paused via CSS class on body
+      if (active) {
+        document.body.classList.add('calm-mode')
+      } else {
+        document.body.classList.remove('calm-mode')
+      }
+    },
+  },
+  {
+    id: 'large_text',
+    label: 'Large Text',
+    emoji: '🔡',
+    desc: 'Increases font size for easier reading.',
+    apply: (active) => {
+      document.documentElement.style.fontSize = active ? '19px' : '16px'
+    },
+  },
+  {
+    id: 'extra_time',
+    label: 'Extra Time',
+    emoji: '⏳',
+    desc: 'All activities run at your own pace — no rushing.',
+    apply: () => {}, // informational — no timer exists yet
+  },
+  {
+    id: 'read_aloud',
+    label: 'Read Aloud',
+    emoji: '🔊',
+    desc: 'Tap any question or text to hear it spoken aloud.',
+    apply: (active) => {
+      if (active) {
+        document.body.classList.add('read-aloud-mode')
+      } else {
+        document.body.classList.remove('read-aloud-mode')
+        window.speechSynthesis?.cancel()
+      }
+    },
+  },
+  {
+    id: 'chunked_tasks',
+    label: 'Chunked Tasks',
+    emoji: '🧩',
+    desc: 'Activities broken into smaller steps.',
+    apply: () => {}, // informational for MVP
+  },
+]
+
+// Apply all active tools on initial load (persisted state)
+function applyAllActive(activeIds) {
+  SEN_TOOLS.forEach((tool) => {
+    tool.apply(activeIds.includes(tool.id))
+  })
+}
+
+export default function FloatingSENButton({ activeTab }) {
+  const [open, setOpen] = useState(false)
+  const [activeTools, setActiveTools] = useState(() => getSenActive())
+  const [showTooltip, setShowTooltip] = useState(false)
+
+  // Apply persisted tools on mount
+  useEffect(() => {
+    const saved = getSenActive()
+    setActiveTools(saved)
+    applyAllActive(saved)
+
+    // First-render tooltip
+    if (!getSenTooltipShown()) {
+      setShowTooltip(true)
+      setSenTooltipShown()
+      const t = setTimeout(() => setShowTooltip(false), 3000)
+      return () => clearTimeout(t)
+    }
+  }, [])
+
+  // Read-aloud click delegation
+  useEffect(() => {
+    if (!activeTools.includes('read_aloud')) return
+
+    function handleClick(e) {
+      const el = e.target.closest('p, h1, h2, h3, h4, button, label, [data-speak]')
+      if (!el) return
+      const text = el.innerText || el.textContent
+      if (!text?.trim()) return
+      window.speechSynthesis?.cancel()
+      const utt = new SpeechSynthesisUtterance(text.trim())
+      utt.lang = 'en-GB'
+      utt.rate = 0.9
+      window.speechSynthesis?.speak(utt)
+    }
+
+    document.addEventListener('click', handleClick)
+    return () => document.removeEventListener('click', handleClick)
+  }, [activeTools])
+
+  function handleToggle(toolId) {
+    const updated = toggleSenTool(toolId)
+    setActiveTools(updated)
+    const tool = SEN_TOOLS.find((t) => t.id === toolId)
+    tool?.apply(updated.includes(toolId))
+  }
+
+  // Hide on SEN tab (tab 6)
   if (activeTab === 6) return null
 
+  const anyActive = activeTools.length > 0
+
   return (
-    <button
-      onClick={() => onTabChange(6)}
-      aria-label="Open Accessibility Tools"
-      title="Accessibility Tools"
-      style={styles.btn}
-    >
-      🌈
-    </button>
+    <>
+      {/* Tooltip */}
+      {showTooltip && !open && (
+        <div style={st.tooltip} role="status" aria-live="polite">
+          Tap here for accessibility tools ♿
+        </div>
+      )}
+
+      {/* Modal overlay */}
+      {open && (
+        <div
+          style={st.overlay}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Accessibility Tools"
+          onClick={(e) => { if (e.target === e.currentTarget) setOpen(false) }}
+        >
+          <div style={st.modal}>
+            <div style={st.modalHeader}>
+              <h2 style={st.modalTitle}>♿ Accessibility Tools</h2>
+              <button onClick={() => setOpen(false)} style={st.closeBtn} aria-label="Close accessibility tools">✕</button>
+            </div>
+            <p style={st.modalSub}>Tap a tool to turn it on or off. Settings are saved automatically.</p>
+            <div style={st.toolsGrid}>
+              {SEN_TOOLS.map((tool) => {
+                const isOn = activeTools.includes(tool.id)
+                return (
+                  <button
+                    key={tool.id}
+                    onClick={() => handleToggle(tool.id)}
+                    aria-pressed={isOn}
+                    style={{
+                      ...st.toolCard,
+                      background: isOn ? 'var(--plum)' : '#f5f0fa',
+                      color: isOn ? '#fff' : 'var(--text-dark)',
+                      borderColor: isOn ? 'var(--plum)' : 'rgba(107,63,160,0.15)',
+                    }}
+                  >
+                    <span style={st.toolEmoji} aria-hidden="true">{tool.emoji}</span>
+                    <span style={st.toolLabel}>{tool.label}</span>
+                    <span style={{ ...st.toolStatus, color: isOn ? 'rgba(255,255,255,0.8)' : 'var(--text-mid)' }}>
+                      {isOn ? 'ON' : 'OFF'}
+                    </span>
+                    <span style={{ ...st.toolDesc, color: isOn ? 'rgba(255,255,255,0.75)' : 'var(--text-mid)' }}>
+                      {tool.desc}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating button */}
+      <button
+        onClick={() => setOpen((o) => !o)}
+        aria-label="Open Accessibility Tools"
+        title="Accessibility Tools"
+        style={{
+          ...st.btn,
+          boxShadow: anyActive
+            ? '0 0 0 3px var(--gold), 0 4px 20px rgba(61,26,94,0.35)'
+            : '0 4px 20px rgba(61,26,94,0.35)',
+        }}
+      >
+        ♿
+      </button>
+    </>
   )
 }
 
-const styles = {
+const st = {
   btn: {
     position: 'fixed',
     bottom: '24px',
@@ -21,15 +207,105 @@ const styles = {
     width: '52px',
     height: '52px',
     borderRadius: '50%',
-    background: 'var(--plum)',
-    border: '3px solid rgba(255,255,255,0.3)',
-    boxShadow: '0 4px 20px rgba(61,26,94,0.35)',
-    fontSize: '1.5rem',
+    background: 'linear-gradient(135deg, #FF6B6B, #FFB347, #4ECDC4, #6B3FA0)',
+    border: '3px solid rgba(255,255,255,0.4)',
+    fontSize: '1.4rem',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 500,
     transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+    color: '#fff',
   },
+  tooltip: {
+    position: 'fixed',
+    bottom: '84px',
+    right: '16px',
+    background: 'var(--plum)',
+    color: '#fff',
+    padding: '8px 14px',
+    borderRadius: '10px',
+    fontSize: '0.8rem',
+    fontWeight: 600,
+    fontFamily: "'Nunito', sans-serif",
+    zIndex: 501,
+    maxWidth: '200px',
+    textAlign: 'center',
+    boxShadow: '0 4px 16px rgba(61,26,94,0.3)',
+    pointerEvents: 'none',
+  },
+  overlay: {
+    position: 'fixed',
+    inset: 0,
+    background: 'rgba(26,10,46,0.6)',
+    zIndex: 600,
+    display: 'flex',
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    padding: '0 0 90px',
+  },
+  modal: {
+    background: '#fff',
+    borderRadius: '20px 20px 20px 20px',
+    padding: '24px 20px 28px',
+    width: '100%',
+    maxWidth: '480px',
+    maxHeight: '80vh',
+    overflowY: 'auto',
+    boxShadow: '0 -4px 40px rgba(61,26,94,0.25)',
+  },
+  modalHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '6px',
+  },
+  modalTitle: {
+    fontFamily: "'Baloo 2', cursive",
+    fontWeight: 800,
+    color: 'var(--plum)',
+    fontSize: '1.2rem',
+  },
+  closeBtn: {
+    background: 'transparent',
+    border: 'none',
+    fontSize: '1.1rem',
+    color: 'var(--text-mid)',
+    cursor: 'pointer',
+    padding: '4px 8px',
+    minWidth: '44px',
+    minHeight: '44px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalSub: {
+    fontSize: '0.8rem',
+    color: 'var(--text-mid)',
+    marginBottom: '16px',
+  },
+  toolsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))',
+    gap: '10px',
+  },
+  toolCard: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: '4px',
+    padding: '14px 16px',
+    borderRadius: '14px',
+    border: '2px solid',
+    cursor: 'pointer',
+    textAlign: 'left',
+    fontFamily: "'Nunito', sans-serif",
+    transition: 'background 0.2s ease, color 0.2s ease',
+    minHeight: '44px',
+  },
+  toolEmoji: { fontSize: '1.4rem' },
+  toolLabel: { fontWeight: 700, fontSize: '0.9rem' },
+  toolStatus: { fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' },
+  toolDesc: { fontSize: '0.75rem', lineHeight: 1.4 },
 }

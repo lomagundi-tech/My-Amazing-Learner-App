@@ -19,6 +19,7 @@ import {
   getChildName,
   getStars, getBadges,
   updateStreak, getStreak,
+  earnBadge,
   setLastVisit,
 } from '../src/utils/storage'
 
@@ -41,10 +42,15 @@ export default function App() {
     const savedBadges = getBadges()
     const currentStreak = updateStreak()
 
+    // Streak milestone badge awards (check each time streak updates on load)
+    if (currentStreak >= 7)  earnBadge('week_warrior')
+    if (currentStreak >= 14) earnBadge('fortnight_champ')
+    if (currentStreak >= 30) earnBadge('amazing_month')
+
     setMode(savedMode)
     setChildName(savedName)
     setStars(savedStars)
-    setBadges(savedBadges)
+    setBadges(getBadges()) // re-read after potential badge awards
     setStreak(currentStreak)
     setLastVisit()
 
@@ -76,7 +82,7 @@ export default function App() {
   const sharedProps = { mode, onTabChange: handleTabChange }
 
   const panels = [
-    <HomePanel      key={panelKey} {...sharedProps} childName={childName} stars={stars} streak={streak} onStarsChange={refreshStars} />,
+    <HomePanel      key={panelKey} {...sharedProps} onModeSwitch={handleModeToggle} onEditName={() => setShowNameModal(true)} childName={childName} stars={stars} streak={streak} onStarsChange={refreshStars} />,
     <AITutor        key={panelKey} {...sharedProps} childName={childName} />,
     <QuizPanel      key={panelKey} {...sharedProps} onStarsChange={refreshStars} onBadgesChange={refreshBadges} />,
     <ProgressPanel  key={panelKey} {...sharedProps} childName={childName} stars={stars} />,
@@ -111,7 +117,7 @@ export default function App() {
       {showNameModal && <NameModal onSave={handleNameSave} />}
 
       <div className="no-print">
-        <Header mode={mode} onToggle={handleModeToggle} />
+        <Header mode={mode} onToggle={handleModeToggle} streak={streak} />
         <TabNav activeTab={activeTab} onTabChange={handleTabChange} mode={mode} />
         <Hero mode={mode} />
       </div>

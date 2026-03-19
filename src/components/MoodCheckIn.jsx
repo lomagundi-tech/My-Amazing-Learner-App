@@ -21,6 +21,10 @@ export default function MoodCheckIn({ onDone }) {
     setTimeout(onDone, 800)
   }
 
+  function skip() {
+    onDone()
+  }
+
   const picked = MOODS.find((m) => m.value === selected)
 
   return (
@@ -45,6 +49,9 @@ export default function MoodCheckIn({ onDone }) {
               </button>
             ))}
           </div>
+          <button onClick={skip} style={styles.skipBtn} aria-label="Skip mood check-in">
+            Skip for now
+          </button>
         </>
       )}
     </div>
@@ -95,5 +102,17 @@ const styles = {
     fontWeight: 700,
     color: 'var(--violet)',
     fontSize: '1rem',
+  },
+  skipBtn: {
+    display: 'block',
+    margin: '12px auto 0',
+    background: 'transparent',
+    border: 'none',
+    color: 'var(--text-mid)',
+    fontSize: '0.75rem',
+    cursor: 'pointer',
+    textDecoration: 'underline',
+    padding: '4px 8px',
+    minHeight: '44px',
   },
 }

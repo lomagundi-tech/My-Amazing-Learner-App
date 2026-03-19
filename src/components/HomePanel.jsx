@@ -1,16 +1,16 @@
 import { useState } from 'react'
 import { MARKET_STATS, MARKET_GAPS } from '../data/marketData'
 import { getTodaysChallenge } from '../data/dailyChallenges'
-import { addStar, hasAnsweredTodaysChallenge, setDailyChallengedDate } from '../utils/storage'
+import { addStar, getStars, setStars, hasAnsweredTodaysChallenge, setDailyChallengedDate, clearAll } from '../utils/storage'
 import ComingSoonModal from './ComingSoonModal'
 
-export default function HomePanel({ mode, onTabChange, childName, stars, streak, onStarsChange }) {
+export default function HomePanel({ mode, onTabChange, onModeSwitch, onEditName, childName, stars, streak, onStarsChange }) {
   const isChild = mode === 'child'
   return (
     <div className="panel-enter">
       {isChild
         ? <ChildHome onTabChange={onTabChange} childName={childName} stars={stars} streak={streak} onStarsChange={onStarsChange} />
-        : <ParentHome onTabChange={onTabChange} childName={childName} stars={stars} streak={streak} onStarsChange={onStarsChange} />
+        : <ParentHome onTabChange={onTabChange} onModeSwitch={onModeSwitch} onEditName={onEditName} childName={childName} stars={stars} streak={streak} onStarsChange={onStarsChange} />
       }
     </div>
   )
@@ -19,6 +19,7 @@ export default function HomePanel({ mode, onTabChange, childName, stars, streak,
 /* ── Daily Challenge ────────────────────────────────────────── */
 function DailyChallenge({ mode, onStarsChange }) {
   const challenge = getTodaysChallenge()
+  const correctAnswer = challenge.options[challenge.correctIndex]
   const [selected, setSelected] = useState(null)
   const [answered] = useState(() => hasAnsweredTodaysChallenge())
   const isChild = mode === 'child'
@@ -27,21 +28,19 @@ function DailyChallenge({ mode, onStarsChange }) {
     if (selected || answered) return
     setSelected(opt)
     setDailyChallengedDate()
-    if (opt === challenge.answer) {
-      addStar()
+    if (opt === correctAnswer) {
+      // +2 stars for correct daily challenge answer (bonus for difficulty per spec)
+      setStars(getStars() + 2)
       onStarsChange()
     }
   }
 
-  const correct = selected === challenge.answer
+  const correct = selected === correctAnswer
 
   return (
     <div style={dc.card}>
       <div style={dc.badge}>✨ Daily Challenge — {challenge.subject}</div>
-      {challenge.icon && (
-        <div style={dc.iconWrap} aria-hidden="true">{challenge.icon}</div>
-      )}
-      <p style={dc.question}>{challenge.q}</p>
+      <p style={dc.question}>{challenge.question}</p>
 
       {answered && !selected ? (
         <p style={dc.done}>Already answered today — come back tomorrow! 🌅</p>
@@ -50,8 +49,8 @@ function DailyChallenge({ mode, onStarsChange }) {
           {challenge.options.map((opt) => {
             let bg = 'rgba(255,255,255,0.6)'
             if (selected) {
-              if (opt === challenge.answer) bg = 'rgba(78,205,196,0.3)'
-              else if (opt === selected)    bg = 'rgba(255,107,107,0.3)'
+              if (opt === correctAnswer) bg = 'rgba(78,205,196,0.3)'
+              else if (opt === selected) bg = 'rgba(255,107,107,0.3)'
             }
             return (
               <button
@@ -68,11 +67,17 @@ function DailyChallenge({ mode, onStarsChange }) {
       )}
 
       {selected && (
-        <p style={{ ...dc.result, color: correct ? '#1a6b67' : '#b22222' }}>
-          {correct
-            ? (isChild ? 'Brilliant! +1 star ⭐' : `Correct! +1 star earned.`)
-            : (isChild ? `Not quite — the answer was ${challenge.answer} 💛` : `The answer was ${challenge.answer}.`)}
-        </p>
+        <>
+          <p style={{ ...dc.result, color: correct ? '#1a6b67' : '#b22222' }}>
+            {correct
+              ? (isChild ? 'Brilliant! +2 stars ⭐⭐' : 'Correct! +2 stars earned.')
+              : (isChild ? `Not quite — the answer was ${correctAnswer} 💛` : `The answer was ${correctAnswer}.`)}
+          </p>
+          <div style={dc.funFact}>
+            <span style={dc.funFactIcon} aria-hidden="true">💡</span>
+            <p style={dc.funFactText}>{challenge.funFact}</p>
+          </div>
+        </>
       )}
     </div>
   )
@@ -133,12 +138,13 @@ const PLANS = [
   },
 ]
 
-function PricingSection({ onTabChange }) {
+function PricingSection({ onTabChange, onModeSwitch }) {
   const [modalTier, setModalTier] = useState(null)
 
   function handleCta(plan) {
     if (plan.id === 'free') {
-      onTabChange(2) // go to quiz/activities
+      onModeSwitch('child') // switch to child mode first, per spec
+      onTabChange(2)        // then go to Activities tab
     } else {
       setModalTier(plan.name)
     }
@@ -193,12 +199,29 @@ function PricingSection({ onTabChange }) {
 }
 
 /* ── Parent Home ────────────────────────────────────────────── */
-function ParentHome({ onTabChange, childName, stars, streak, onStarsChange }) {
+function ParentHome({ onTabChange, onModeSwitch, onEditName, childName, stars, streak, onStarsChange }) {
   const name = childName || 'your learner'
+  const [confirmClear, setConfirmClear] = useState(false)
+
+  function handleClearData() {
+    if (!confirmClear) {
+      setConfirmClear(true)
+      return
+    }
+    clearAll()
+    window.location.reload()
+  }
+
   return (
     <div style={s.section}>
       {/* Welcome + streak */}
       <div style={s.welcomeCard}>
+        {childName && (
+          <div style={s.profileRow}>
+            <span style={s.profileLabel}>Editing profile for: <strong>{childName}</strong></span>
+            <button onClick={onEditName} style={s.editNameBtn}>Edit name</button>
+          </div>
+        )}
         <div style={s.welcomeTop}>
           <div>
             <h2 style={{ ...s.heading, color: 'var(--plum)' }}>
@@ -256,7 +279,7 @@ function ParentHome({ onTabChange, childName, stars, streak, onStarsChange }) {
       </div>
 
       {/* Pricing */}
-      <PricingSection onTabChange={onTabChange} />
+      <PricingSection onTabChange={onTabChange} onModeSwitch={onModeSwitch} />
 
       {/* Shop Banner */}
       <div style={s.shopBanner}>
@@ -267,6 +290,33 @@ function ParentHome({ onTabChange, childName, stars, streak, onStarsChange }) {
         <a href="https://myamazinglearner.co.uk" target="_blank" rel="noopener noreferrer" className="btn btn-gold" style={{ flexShrink: 0 }}>
           Visit Shop →
         </a>
+      </div>
+
+      {/* GDPR — Clear My Data */}
+      <div style={s.gdprCard}>
+        <div>
+          <p style={s.gdprTitle}>Privacy &amp; Data</p>
+          <p style={s.gdprDesc}>
+            All progress, mood, and badge data is stored locally on this device only — never uploaded.
+            You can delete it at any time.{' '}
+            <strong>Note:</strong> progress will not save in private or incognito browsing mode.
+          </p>
+        </div>
+        {confirmClear ? (
+          <div style={s.gdprConfirmRow}>
+            <span style={s.gdprConfirmText}>Are you sure? This cannot be undone.</span>
+            <button onClick={handleClearData} style={{ ...s.gdprBtn, background: 'var(--coral)', color: '#fff' }}>
+              Yes, clear everything
+            </button>
+            <button onClick={() => setConfirmClear(false)} style={s.gdprBtn}>
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button onClick={handleClearData} style={s.gdprBtn}>
+            🗑️ Clear My Data
+          </button>
+        )}
       </div>
     </div>
   )
@@ -365,6 +415,34 @@ const s = {
   },
   activityLabel: { fontFamily: "'Baloo 2', cursive", fontWeight: 700, fontSize: '1rem' },
   activityDesc: { fontSize: '0.8rem', opacity: 0.9 },
+  profileRow: {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    marginBottom: '12px', paddingBottom: '12px',
+    borderBottom: '1px solid rgba(61,26,94,0.08)',
+  },
+  profileLabel: { fontSize: '0.8rem', color: 'var(--text-mid)' },
+  editNameBtn: {
+    background: 'transparent', border: 'none',
+    color: 'var(--violet)', fontSize: '0.8rem', fontWeight: 700,
+    cursor: 'pointer', textDecoration: 'underline',
+    padding: '4px 0', minHeight: '44px', fontFamily: "'Nunito', sans-serif",
+  },
+  gdprCard: {
+    background: '#fff', borderRadius: 'var(--radius-card)', boxShadow: 'var(--shadow-small)',
+    padding: '20px 24px', border: '1px solid rgba(0,0,0,0.07)',
+    display: 'flex', flexDirection: 'column', gap: '12px',
+  },
+  gdprTitle: { fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-mid)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' },
+  gdprDesc: { fontSize: '0.8rem', color: 'var(--text-mid)', lineHeight: 1.6 },
+  gdprBtn: {
+    background: 'transparent', border: '1px solid rgba(0,0,0,0.15)',
+    borderRadius: '8px', padding: '8px 16px',
+    fontSize: '0.8rem', color: 'var(--text-mid)', cursor: 'pointer',
+    fontFamily: "'Nunito', sans-serif", fontWeight: 600, minHeight: '36px',
+    alignSelf: 'flex-start',
+  },
+  gdprConfirmRow: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' },
+  gdprConfirmText: { fontSize: '0.8rem', color: 'var(--coral)', fontWeight: 700 },
 }
 
 const p = {
@@ -414,4 +492,12 @@ const dc = {
   },
   result: { marginTop: '12px', fontWeight: 700, fontSize: '0.95rem' },
   done: { color: 'var(--text-mid)', fontSize: '0.9rem', fontStyle: 'italic' },
+  funFact: {
+    display: 'flex', gap: '10px', alignItems: 'flex-start',
+    marginTop: '14px', padding: '12px 14px',
+    background: 'rgba(78,205,196,0.12)', borderRadius: '12px',
+    border: '1px solid rgba(78,205,196,0.3)',
+  },
+  funFactIcon: { fontSize: '1.1rem', flexShrink: 0, marginTop: '1px' },
+  funFactText: { fontSize: '0.875rem', color: 'var(--text-dark)', lineHeight: 1.6, margin: 0 },
 }

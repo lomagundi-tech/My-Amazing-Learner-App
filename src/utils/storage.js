@@ -1,17 +1,19 @@
 const KEYS = {
-  stars:           'mal_stars',
-  badges:          'mal_badges',
-  progress:        'mal_progress',
-  quizHistory:     'mal_quiz_history',
-  mode:            'mal_mode',
-  lastVisit:       'mal_last_visit',
-  childName:       'mal_child_name',
-  streak:          'mal_streak',
-  streakDate:      'mal_streak_date',
-  moodHistory:     'mal_mood_history',
-  craftsCompleted: 'mal_crafts_completed',
-  dailyChallenged: 'mal_daily_challenge',
-  levelsCompleted: 'mal_levels_completed',
+  stars:             'mal_stars',
+  badges:            'mal_badges',
+  progress:          'mal_progress',
+  quizHistory:       'mal_quiz_history',
+  mode:              'mal_mode',
+  lastVisit:         'mal_last_visit',
+  childName:         'mal_child_name',
+  streak:            'mal_streak',
+  streakDate:        'mal_streak_date',
+  moodHistory:       'mal_mood_history',
+  craftsCompleted:   'mal_crafts_completed',
+  dailyChallenged:   'mal_daily_challenge',
+  levelsCompleted:   'mal_levels_completed',
+  senActive:         'mal_sen_active',
+  senTooltipShown:   'mal_sen_tooltip_shown',
 }
 
 function get(key, fallback = null) {
@@ -117,5 +119,17 @@ export function incrementCorrect() {
   const current = get(KEYS.quizHistory, { total: 0 })
   set(KEYS.quizHistory, { ...current, total: (current.total ?? 0) + 1 })
 }
+
+export function getSenActive()        { return get(KEYS.senActive, []) }
+export function setSenActive(arr)     { set(KEYS.senActive, arr) }
+export function toggleSenTool(id) {
+  const current = getSenActive()
+  const updated = current.includes(id) ? current.filter((t) => t !== id) : [...current, id]
+  set(KEYS.senActive, updated)
+  return updated
+}
+
+export function getSenTooltipShown()  { return get(KEYS.senTooltipShown, false) }
+export function setSenTooltipShown()  { set(KEYS.senTooltipShown, true) }
 
 export { clearAll }

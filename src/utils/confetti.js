@@ -1,6 +1,17 @@
 const COLOURS = ['#3D1A5E', '#FF6B6B', '#FFB347', '#4ECDC4', '#6B3FA0', '#A8E6CF', '#FFD93D']
 
+function motionOk() {
+  return !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+function calmModeOn() {
+  return document.body.classList.contains('calm-mode')
+}
+
 export function launchConfetti() {
+  // Feature 3 spec: disable entirely for reduced-motion and Calm Mode
+  if (!motionOk() || calmModeOn()) return
+
   const container = document.createElement('div')
   container.style.cssText = `
     position:fixed;top:0;left:0;width:100%;height:100%;
