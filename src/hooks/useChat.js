@@ -1,17 +1,18 @@
 import { useState } from 'react'
 import { sendMessage } from '../utils/api'
 
-const OPENING_MESSAGE = {
-  role: 'assistant',
-  content: "Hi there! 🔮 I'm Sparky, your Amazing Learning helper! Ask me anything — maths, reading, spelling, or just how your child is doing. What would you like to explore today?",
-}
+export function useChat(childName, mode) {
+  const isChild = mode === 'child'
 
-export function useChat(childName) {
-  const greeting = childName
-    ? OPENING_MESSAGE.content.replace("Hi there!", `Hi ${childName}!`)
-    : OPENING_MESSAGE.content
+  const greeting = isChild
+    ? childName
+      ? `Hi ${childName}! 🔮 I'm Sparky, your Amazing Learning helper! Ask me anything — maths, reading, spelling, or anything you're curious about. What would you like to explore today?`
+      : `Hi there! 🔮 I'm Sparky, your Amazing Learning helper! Ask me anything — maths, reading, spelling, or anything you're curious about. What would you like to explore today?`
+    : childName
+      ? `Hi! 🔮 I'm Sparky, your Amazing Learning assistant. I'm here to help support ${childName}'s learning journey. Ask me anything — curriculum questions, SEN advice, activity ideas, or how ${childName} is getting on. What would you like to explore today?`
+      : `Hi! 🔮 I'm Sparky, your Amazing Learning assistant. Ask me anything — curriculum questions, SEN advice, activity ideas, or how your child is getting on. What would you like to explore today?`
 
-  const [messages, setMessages] = useState([{ ...OPENING_MESSAGE, content: greeting }])
+  const [messages, setMessages] = useState([{ role: 'assistant', content: greeting }])
   const [input, setInput]       = useState('')
   const [loading, setLoading]   = useState(false)
   const [error, setError]       = useState(null)
@@ -42,7 +43,7 @@ export function useChat(childName) {
   }
 
   function clearChat() {
-    setMessages([{ ...OPENING_MESSAGE, content: greeting }])
+    setMessages([{ role: 'assistant', content: greeting }])
     setError(null)
   }
 
