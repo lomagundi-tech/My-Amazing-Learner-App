@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { MARKET_STATS, MARKET_GAPS } from '../data/marketData'
 import { getTodaysChallenge } from '../data/dailyChallenges'
-import { addStar, hasAnsweredTodaysChallenge, setDailyChallengedDate } from '../utils/storage'
+import { addStar, getStars, setStars, hasAnsweredTodaysChallenge, setDailyChallengedDate } from '../utils/storage'
 import ComingSoonModal from './ComingSoonModal'
 
 export default function HomePanel({ mode, onTabChange, childName, stars, streak, onStarsChange }) {
@@ -19,6 +19,7 @@ export default function HomePanel({ mode, onTabChange, childName, stars, streak,
 /* ── Daily Challenge ────────────────────────────────────────── */
 function DailyChallenge({ mode, onStarsChange }) {
   const challenge = getTodaysChallenge()
+  const correctAnswer = challenge.options[challenge.correctIndex]
   const [selected, setSelected] = useState(null)
   const [answered] = useState(() => hasAnsweredTodaysChallenge())
   const isChild = mode === 'child'
@@ -27,21 +28,19 @@ function DailyChallenge({ mode, onStarsChange }) {
     if (selected || answered) return
     setSelected(opt)
     setDailyChallengedDate()
-    if (opt === challenge.answer) {
-      addStar()
+    if (opt === correctAnswer) {
+      // +2 stars for correct daily challenge answer (bonus for difficulty per spec)
+      setStars(getStars() + 2)
       onStarsChange()
     }
   }
 
-  const correct = selected === challenge.answer
+  const correct = selected === correctAnswer
 
   return (
     <div style={dc.card}>
       <div style={dc.badge}>✨ Daily Challenge — {challenge.subject}</div>
-      {challenge.icon && (
-        <div style={dc.iconWrap} aria-hidden="true">{challenge.icon}</div>
-      )}
-      <p style={dc.question}>{challenge.q}</p>
+      <p style={dc.question}>{challenge.question}</p>
 
       {answered && !selected ? (
         <p style={dc.done}>Already answered today — come back tomorrow! 🌅</p>
@@ -50,8 +49,8 @@ function DailyChallenge({ mode, onStarsChange }) {
           {challenge.options.map((opt) => {
             let bg = 'rgba(255,255,255,0.6)'
             if (selected) {
-              if (opt === challenge.answer) bg = 'rgba(78,205,196,0.3)'
-              else if (opt === selected)    bg = 'rgba(255,107,107,0.3)'
+              if (opt === correctAnswer) bg = 'rgba(78,205,196,0.3)'
+              else if (opt === selected) bg = 'rgba(255,107,107,0.3)'
             }
             return (
               <button
@@ -68,11 +67,17 @@ function DailyChallenge({ mode, onStarsChange }) {
       )}
 
       {selected && (
-        <p style={{ ...dc.result, color: correct ? '#1a6b67' : '#b22222' }}>
-          {correct
-            ? (isChild ? 'Brilliant! +1 star ⭐' : `Correct! +1 star earned.`)
-            : (isChild ? `Not quite — the answer was ${challenge.answer} 💛` : `The answer was ${challenge.answer}.`)}
-        </p>
+        <>
+          <p style={{ ...dc.result, color: correct ? '#1a6b67' : '#b22222' }}>
+            {correct
+              ? (isChild ? 'Brilliant! +2 stars ⭐⭐' : 'Correct! +2 stars earned.')
+              : (isChild ? `Not quite — the answer was ${correctAnswer} 💛` : `The answer was ${correctAnswer}.`)}
+          </p>
+          <div style={dc.funFact}>
+            <span style={dc.funFactIcon} aria-hidden="true">💡</span>
+            <p style={dc.funFactText}>{challenge.funFact}</p>
+          </div>
+        </>
       )}
     </div>
   )
@@ -414,4 +419,12 @@ const dc = {
   },
   result: { marginTop: '12px', fontWeight: 700, fontSize: '0.95rem' },
   done: { color: 'var(--text-mid)', fontSize: '0.9rem', fontStyle: 'italic' },
+  funFact: {
+    display: 'flex', gap: '10px', alignItems: 'flex-start',
+    marginTop: '14px', padding: '12px 14px',
+    background: 'rgba(78,205,196,0.12)', borderRadius: '12px',
+    border: '1px solid rgba(78,205,196,0.3)',
+  },
+  funFactIcon: { fontSize: '1.1rem', flexShrink: 0, marginTop: '1px' },
+  funFactText: { fontSize: '0.875rem', color: 'var(--text-dark)', lineHeight: 1.6, margin: 0 },
 }
