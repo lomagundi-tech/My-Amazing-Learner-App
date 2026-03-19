@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { PROGRESS_AREAS } from '../data/progressData'
 import { BADGES } from '../data/badgesData'
 import { CRAFTS } from '../data/craftsData'
-import { getMoodHistory, getStars, getBadges, getCraftsCompleted, getStreak } from '../utils/storage'
+import { getMoodHistory, getStars, getBadges, getCraftsCompleted, getStreak, getSubjectProgress } from '../utils/storage'
 
 // Mood emoji map (index 1–5)
 const MOODS = ['', '😔', '😕', '😐', '🙂', '😄']
@@ -17,8 +17,8 @@ const STRENGTH_HEADLINES = {
   science:   (name) => `${name} is a Science Explorer! 🔭`,
 }
 
-function getStrengthHeadline(name) {
-  const strongest = [...PROGRESS_AREAS].sort((a, b) => b.pct - a.pct)[0]
+function getStrengthHeadline(name, areas) {
+  const strongest = [...areas].sort((a, b) => b.pct - a.pct)[0]
   const fn = STRENGTH_HEADLINES[strongest.id]
   return fn ? fn(name) : `${name} is an Amazing Learner! 🌟`
 }
@@ -47,6 +47,15 @@ export default function ProgressPanel({ mode, stars, childName }) {
   const isChild = mode === 'child'
   const name = childName || 'Your Amazing Learner'
   const displayName = childName || 'your learner'
+
+  // Merge base percentages with quiz correct-answer increments (+2% per correct answer, capped at 100%)
+  const subjectProgress = getSubjectProgress()
+  const progressAreas = PROGRESS_AREAS.map((area) => ({
+    ...area,
+    pct: area.subjectKey
+      ? Math.min(area.pct + (subjectProgress[area.subjectKey] ?? 0) * 2, 100)
+      : area.pct,
+  }))
 
   useEffect(() => {
     const t = setTimeout(() => setAnimated(true), 100)
@@ -81,7 +90,7 @@ export default function ProgressPanel({ mode, stars, childName }) {
   const streak = getStreak()
   const totalStars = getStars()
   const earnedBadgeCount = earnedBadgeIds.length
-  const strengthHeadline = getStrengthHeadline(name)
+  const strengthHeadline = getStrengthHeadline(name, progressAreas)
   const sparkyMessage = getSparkyMessage(name, earnedBadgeCount, streak)
   const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
 
@@ -116,7 +125,7 @@ export default function ProgressPanel({ mode, stars, childName }) {
 
       {/* Progress bars */}
       <div style={styles.barsWrapper}>
-        {PROGRESS_AREAS.map((area) => (
+        {progressAreas.map((area) => (
           <div key={area.id} style={styles.barRow}>
             <div style={styles.barLabel}>
               <span aria-hidden="true">{area.emoji}</span>
@@ -214,7 +223,7 @@ export default function ProgressPanel({ mode, stars, childName }) {
         {/* PROGRESS BARS — greyscale-friendly print colours */}
         <div style={pr.section}>
           <h2 style={pr.sectionHeading}>Learning Progress</h2>
-          {PROGRESS_AREAS.map((area) => (
+          {progressAreas.map((area) => (
             <div key={area.id} style={pr.barRow}>
               <div style={pr.barMeta}>
                 <span>{area.emoji} {area.label}</span>
