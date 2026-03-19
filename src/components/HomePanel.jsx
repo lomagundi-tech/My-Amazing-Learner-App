@@ -1,16 +1,16 @@
 import { useState } from 'react'
 import { MARKET_STATS, MARKET_GAPS } from '../data/marketData'
 import { getTodaysChallenge } from '../data/dailyChallenges'
-import { addStar, getStars, setStars, hasAnsweredTodaysChallenge, setDailyChallengedDate } from '../utils/storage'
+import { addStar, getStars, setStars, hasAnsweredTodaysChallenge, setDailyChallengedDate, clearAll } from '../utils/storage'
 import ComingSoonModal from './ComingSoonModal'
 
-export default function HomePanel({ mode, onTabChange, childName, stars, streak, onStarsChange }) {
+export default function HomePanel({ mode, onTabChange, onModeSwitch, childName, stars, streak, onStarsChange }) {
   const isChild = mode === 'child'
   return (
     <div className="panel-enter">
       {isChild
         ? <ChildHome onTabChange={onTabChange} childName={childName} stars={stars} streak={streak} onStarsChange={onStarsChange} />
-        : <ParentHome onTabChange={onTabChange} childName={childName} stars={stars} streak={streak} onStarsChange={onStarsChange} />
+        : <ParentHome onTabChange={onTabChange} onModeSwitch={onModeSwitch} childName={childName} stars={stars} streak={streak} onStarsChange={onStarsChange} />
       }
     </div>
   )
@@ -138,12 +138,13 @@ const PLANS = [
   },
 ]
 
-function PricingSection({ onTabChange }) {
+function PricingSection({ onTabChange, onModeSwitch }) {
   const [modalTier, setModalTier] = useState(null)
 
   function handleCta(plan) {
     if (plan.id === 'free') {
-      onTabChange(2) // go to quiz/activities
+      onModeSwitch('child') // switch to child mode first, per spec
+      onTabChange(2)        // then go to Activities tab
     } else {
       setModalTier(plan.name)
     }
@@ -198,8 +199,19 @@ function PricingSection({ onTabChange }) {
 }
 
 /* ── Parent Home ────────────────────────────────────────────── */
-function ParentHome({ onTabChange, childName, stars, streak, onStarsChange }) {
+function ParentHome({ onTabChange, onModeSwitch, childName, stars, streak, onStarsChange, onClearData }) {
   const name = childName || 'your learner'
+  const [confirmClear, setConfirmClear] = useState(false)
+
+  function handleClearData() {
+    if (!confirmClear) {
+      setConfirmClear(true)
+      return
+    }
+    clearAll()
+    window.location.reload()
+  }
+
   return (
     <div style={s.section}>
       {/* Welcome + streak */}
@@ -261,7 +273,7 @@ function ParentHome({ onTabChange, childName, stars, streak, onStarsChange }) {
       </div>
 
       {/* Pricing */}
-      <PricingSection onTabChange={onTabChange} />
+      <PricingSection onTabChange={onTabChange} onModeSwitch={onModeSwitch} />
 
       {/* Shop Banner */}
       <div style={s.shopBanner}>
@@ -272,6 +284,33 @@ function ParentHome({ onTabChange, childName, stars, streak, onStarsChange }) {
         <a href="https://myamazinglearner.co.uk" target="_blank" rel="noopener noreferrer" className="btn btn-gold" style={{ flexShrink: 0 }}>
           Visit Shop →
         </a>
+      </div>
+
+      {/* GDPR — Clear My Data */}
+      <div style={s.gdprCard}>
+        <div>
+          <p style={s.gdprTitle}>Privacy &amp; Data</p>
+          <p style={s.gdprDesc}>
+            All progress, mood, and badge data is stored locally on this device only — never uploaded.
+            You can delete it at any time.{' '}
+            <strong>Note:</strong> progress will not save in private or incognito browsing mode.
+          </p>
+        </div>
+        {confirmClear ? (
+          <div style={s.gdprConfirmRow}>
+            <span style={s.gdprConfirmText}>Are you sure? This cannot be undone.</span>
+            <button onClick={handleClearData} style={{ ...s.gdprBtn, background: 'var(--coral)', color: '#fff' }}>
+              Yes, clear everything
+            </button>
+            <button onClick={() => setConfirmClear(false)} style={s.gdprBtn}>
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button onClick={handleClearData} style={s.gdprBtn}>
+            🗑️ Clear My Data
+          </button>
+        )}
       </div>
     </div>
   )
@@ -370,6 +409,22 @@ const s = {
   },
   activityLabel: { fontFamily: "'Baloo 2', cursive", fontWeight: 700, fontSize: '1rem' },
   activityDesc: { fontSize: '0.8rem', opacity: 0.9 },
+  gdprCard: {
+    background: '#fff', borderRadius: 'var(--radius-card)', boxShadow: 'var(--shadow-small)',
+    padding: '20px 24px', border: '1px solid rgba(0,0,0,0.07)',
+    display: 'flex', flexDirection: 'column', gap: '12px',
+  },
+  gdprTitle: { fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-mid)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' },
+  gdprDesc: { fontSize: '0.8rem', color: 'var(--text-mid)', lineHeight: 1.6 },
+  gdprBtn: {
+    background: 'transparent', border: '1px solid rgba(0,0,0,0.15)',
+    borderRadius: '8px', padding: '8px 16px',
+    fontSize: '0.8rem', color: 'var(--text-mid)', cursor: 'pointer',
+    fontFamily: "'Nunito', sans-serif", fontWeight: 600, minHeight: '36px',
+    alignSelf: 'flex-start',
+  },
+  gdprConfirmRow: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' },
+  gdprConfirmText: { fontSize: '0.8rem', color: 'var(--coral)', fontWeight: 700 },
 }
 
 const p = {

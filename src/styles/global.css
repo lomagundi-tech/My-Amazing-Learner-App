@@ -217,6 +217,11 @@ ul, ol {
 /* Firefox: scrollbar may appear inside tab nav — force hidden */
 .tab-track::-webkit-scrollbar { display: none; }
 
+/* SEN Calm Mode — pause all decorative animations */
+body.calm-mode .blob { animation-play-state: paused !important; }
+body.calm-mode .panel-enter { animation: none !important; }
+body.calm-mode * { transition-duration: 0s !important; }
+
 /* ============================================================
    PRINT STYLES — Feature 8: Printable Progress Report
    Tested targets: iOS Safari, Android Chrome, desktop Chrome, desktop Firefox
