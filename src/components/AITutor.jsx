@@ -8,7 +8,7 @@ const PARENT_CHIPS = [
 ]
 
 export default function AITutor({ mode, childName }) {
-  const { messages, input, setInput, loading, error, sendChat } = useChat(childName)
+  const { messages, input, setInput, loading, error, sendChat } = useChat(childName, mode)
   const bottomRef = useRef(null)
 
   useEffect(() => {
