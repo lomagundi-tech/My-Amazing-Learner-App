@@ -4,13 +4,13 @@ import { getTodaysChallenge } from '../data/dailyChallenges'
 import { addStar, getStars, setStars, hasAnsweredTodaysChallenge, setDailyChallengedDate, clearAll } from '../utils/storage'
 import ComingSoonModal from './ComingSoonModal'
 
-export default function HomePanel({ mode, onTabChange, onModeSwitch, childName, stars, streak, onStarsChange }) {
+export default function HomePanel({ mode, onTabChange, onModeSwitch, onEditName, childName, stars, streak, onStarsChange }) {
   const isChild = mode === 'child'
   return (
     <div className="panel-enter">
       {isChild
         ? <ChildHome onTabChange={onTabChange} childName={childName} stars={stars} streak={streak} onStarsChange={onStarsChange} />
-        : <ParentHome onTabChange={onTabChange} onModeSwitch={onModeSwitch} childName={childName} stars={stars} streak={streak} onStarsChange={onStarsChange} />
+        : <ParentHome onTabChange={onTabChange} onModeSwitch={onModeSwitch} onEditName={onEditName} childName={childName} stars={stars} streak={streak} onStarsChange={onStarsChange} />
       }
     </div>
   )
@@ -199,7 +199,7 @@ function PricingSection({ onTabChange, onModeSwitch }) {
 }
 
 /* ── Parent Home ────────────────────────────────────────────── */
-function ParentHome({ onTabChange, onModeSwitch, childName, stars, streak, onStarsChange, onClearData }) {
+function ParentHome({ onTabChange, onModeSwitch, onEditName, childName, stars, streak, onStarsChange }) {
   const name = childName || 'your learner'
   const [confirmClear, setConfirmClear] = useState(false)
 
@@ -216,6 +216,12 @@ function ParentHome({ onTabChange, onModeSwitch, childName, stars, streak, onSta
     <div style={s.section}>
       {/* Welcome + streak */}
       <div style={s.welcomeCard}>
+        {childName && (
+          <div style={s.profileRow}>
+            <span style={s.profileLabel}>Editing profile for: <strong>{childName}</strong></span>
+            <button onClick={onEditName} style={s.editNameBtn}>Edit name</button>
+          </div>
+        )}
         <div style={s.welcomeTop}>
           <div>
             <h2 style={{ ...s.heading, color: 'var(--plum)' }}>
@@ -409,6 +415,18 @@ const s = {
   },
   activityLabel: { fontFamily: "'Baloo 2', cursive", fontWeight: 700, fontSize: '1rem' },
   activityDesc: { fontSize: '0.8rem', opacity: 0.9 },
+  profileRow: {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    marginBottom: '12px', paddingBottom: '12px',
+    borderBottom: '1px solid rgba(61,26,94,0.08)',
+  },
+  profileLabel: { fontSize: '0.8rem', color: 'var(--text-mid)' },
+  editNameBtn: {
+    background: 'transparent', border: 'none',
+    color: 'var(--violet)', fontSize: '0.8rem', fontWeight: 700,
+    cursor: 'pointer', textDecoration: 'underline',
+    padding: '4px 0', minHeight: '44px', fontFamily: "'Nunito', sans-serif",
+  },
   gdprCard: {
     background: '#fff', borderRadius: 'var(--radius-card)', boxShadow: 'var(--shadow-small)',
     padding: '20px 24px', border: '1px solid rgba(0,0,0,0.07)',

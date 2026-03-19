@@ -82,7 +82,7 @@ export default function App() {
   const sharedProps = { mode, onTabChange: handleTabChange }
 
   const panels = [
-    <HomePanel      key={panelKey} {...sharedProps} onModeSwitch={handleModeToggle} childName={childName} stars={stars} streak={streak} onStarsChange={refreshStars} />,
+    <HomePanel      key={panelKey} {...sharedProps} onModeSwitch={handleModeToggle} onEditName={() => setShowNameModal(true)} childName={childName} stars={stars} streak={streak} onStarsChange={refreshStars} />,
     <AITutor        key={panelKey} {...sharedProps} childName={childName} />,
     <QuizPanel      key={panelKey} {...sharedProps} onStarsChange={refreshStars} onBadgesChange={refreshBadges} />,
     <ProgressPanel  key={panelKey} {...sharedProps} childName={childName} stars={stars} />,
@@ -117,7 +117,7 @@ export default function App() {
       {showNameModal && <NameModal onSave={handleNameSave} />}
 
       <div className="no-print">
-        <Header mode={mode} onToggle={handleModeToggle} />
+        <Header mode={mode} onToggle={handleModeToggle} streak={streak} />
         <TabNav activeTab={activeTab} onTabChange={handleTabChange} mode={mode} />
         <Hero mode={mode} />
       </div>

@@ -1,6 +1,6 @@
 import ModeToggle from './ModeToggle'
 
-export default function Header({ mode, onToggle }) {
+export default function Header({ mode, onToggle, streak }) {
   return (
     <header style={styles.header}>
       <div className="container" style={styles.inner}>
@@ -8,7 +8,15 @@ export default function Header({ mode, onToggle }) {
           <span style={styles.sparkIcon} aria-hidden="true">💫</span>
           <span style={styles.wordmark} className="header-wordmark">My Amazing Learner</span>
         </div>
-        <ModeToggle mode={mode} onToggle={onToggle} />
+        <div style={styles.right}>
+          {streak > 0 && (
+            <div style={styles.streakBadge} aria-label={`${streak} day learning streak`} title={`${streak}-day streak!`}>
+              <span aria-hidden="true">🔥</span>
+              <span style={styles.streakNum}>{streak}</span>
+            </div>
+          )}
+          <ModeToggle mode={mode} onToggle={onToggle} />
+        </div>
       </div>
     </header>
   )
@@ -47,6 +55,28 @@ const styles = {
     fontWeight: 800,
     fontSize: '1.25rem',
     color: 'var(--plum)',
+    lineHeight: 1,
+  },
+  right: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    flexShrink: 0,
+  },
+  streakBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    background: 'linear-gradient(135deg, #FF6B6B, #FFB347)',
+    borderRadius: 'var(--radius-pill)',
+    padding: '4px 10px',
+    fontSize: '0.85rem',
+  },
+  streakNum: {
+    fontFamily: "'Baloo 2', cursive",
+    fontWeight: 800,
+    color: '#fff',
+    fontSize: '0.9rem',
     lineHeight: 1,
   },
 }
