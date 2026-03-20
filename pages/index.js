@@ -7,6 +7,7 @@ import Hero from '../src/components/layout/Hero'
 import HomePanel from '../src/components/HomePanel'
 import AITutor from '../src/components/AITutor'
 import QuizPanel from '../src/components/QuizPanel'
+import ParentActivitiesPanel from '../src/components/ParentActivitiesPanel'
 import ProgressPanel from '../src/components/ProgressPanel'
 import CraftsPanel from '../src/components/CraftsPanel'
 import RewardsPanel from '../src/components/RewardsPanel'
@@ -84,7 +85,9 @@ export default function App() {
   const panels = [
     <HomePanel      key={panelKey} {...sharedProps} onModeSwitch={handleModeToggle} onEditName={() => setShowNameModal(true)} childName={childName} stars={stars} streak={streak} onStarsChange={refreshStars} />,
     <AITutor        key={panelKey} {...sharedProps} childName={childName} />,
-    <QuizPanel      key={panelKey} {...sharedProps} onStarsChange={refreshStars} onBadgesChange={refreshBadges} />,
+    mode === 'parent'
+      ? <ParentActivitiesPanel key={panelKey} childName={childName} />
+      : <QuizPanel key={panelKey} {...sharedProps} onStarsChange={refreshStars} onBadgesChange={refreshBadges} />,
     <ProgressPanel  key={panelKey} {...sharedProps} childName={childName} stars={stars} />,
     <CraftsPanel    key={panelKey} {...sharedProps} onBadgesChange={refreshBadges} />,
     <RewardsPanel   key={panelKey} {...sharedProps} stars={stars} badges={badges} />,
