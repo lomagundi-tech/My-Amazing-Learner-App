@@ -1,23 +1,27 @@
 const KEYS = {
-  stars:                'mal_stars',
-  badges:               'mal_badges',
-  progress:             'mal_progress',
-  quizHistory:          'mal_quiz_history',
-  mode:                 'mal_mode',
-  lastVisit:            'mal_last_visit',
-  childName:            'mal_child_name',
-  streak:               'mal_streak',
-  streakDate:           'mal_streak_date',
-  moodHistory:          'mal_mood_history',
-  craftsCompleted:      'mal_crafts_completed',
-  dailyChallenged:      'mal_daily_challenge',
-  levelsCompleted:      'mal_levels_completed',
-  senActive:            'mal_sen_active',
-  senTooltipShown:      'mal_sen_tooltip_shown',
-  parentCompletions:    'mal_parent_completions',
-  parentVouchers:       'mal_parent_vouchers',
-  parentJointSessions:  'mal_parent_joint_sessions',
-  parentFlashcards:     'mal_parent_flashcards',
+  stars:               'mal_stars',
+  badges:              'mal_badges',
+  progress:            'mal_progress',
+  quizHistory:         'mal_quiz_history',
+  mode:                'mal_mode',
+  lastVisit:           'mal_last_visit',
+  childName:           'mal_child_name',
+  streak:              'mal_streak',
+  streakDate:          'mal_streak_date',
+  moodHistory:         'mal_mood_history',
+  craftsCompleted:     'mal_crafts_completed',
+  dailyChallenged:     'mal_daily_challenge',
+  levelsCompleted:     'mal_levels_completed',
+  senActive:           'mal_sen_active',
+  senTooltipShown:     'mal_sen_tooltip_shown',
+  // Parent portal — keys match future DB table names for clean Phase 2 migration
+  parentCompletions:   'mal_activity_completions',
+  parentVouchers:      'mal_vouchers',
+  parentJointSessions: 'mal_joint_sessions',
+  parentFlashcards:    'mal_parent_flashcards',
+  monthlyCap:          'mal_monthly_cap',
+  gamification:        'mal_gamification',
+  lifeSkillsLog:       'mal_life_skills_log',
 }
 
 function get(key, fallback = null) {
@@ -46,6 +50,7 @@ function clearAll() {
 
 export function getStars()           { return get(KEYS.stars, 0) }
 export function setStars(n)          { set(KEYS.stars, n) }
+export function addStars(n)          { set(KEYS.stars, getStars() + n) }
 export function addStar()            { set(KEYS.stars, getStars() + 1) }
 
 export function getBadges()          { return get(KEYS.badges, ['first_star', 'book_worm', 'number_ninja']) }
@@ -54,7 +59,7 @@ export function earnBadge(id) {
   const current = getBadges()
   if (!current.includes(id)) {
     set(KEYS.badges, [...current, id])
-    return true // newly earned
+    return true
   }
   return false
 }
@@ -72,7 +77,7 @@ export function updateStreak() {
   const lastDate = getStreakDate()
   const yesterday = new Date(Date.now() - 86400000).toDateString()
 
-  if (lastDate === today) return get(KEYS.streak, 1) // already counted today
+  if (lastDate === today) return get(KEYS.streak, 1)
   const newStreak = lastDate === yesterday ? getStreak() + 1 : 1
   set(KEYS.streak, newStreak)
   set(KEYS.streakDate, today)
@@ -124,8 +129,6 @@ export function incrementCorrect() {
   set(KEYS.quizHistory, { ...current, total: (current.total ?? 0) + 1 })
 }
 
-// Subject progress — tracks correct quiz answers per subject
-// Each correct answer adds 2% to the linked progress area (floor = base pct in progressData.js)
 export function getSubjectProgress()  { return get(KEYS.progress, {}) }
 export function recordQuizAnswer(subject, correct) {
   if (!correct || !subject) return
@@ -155,7 +158,10 @@ export function addParentCompletion(activityId, module) {
   const current = getParentCompletions()
   const now = new Date()
   const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
-  set(KEYS.parentCompletions, [...current, { id: activityId, module, completedAt: now.toISOString(), month: monthKey }])
+  set(KEYS.parentCompletions, [
+    ...current,
+    { activity_id: activityId, module, completed_at: now.toISOString(), reward_granted: true, status: 'complete', month: monthKey },
+  ])
 }
 
 export function getParentMonthlyStats() {
@@ -170,7 +176,7 @@ export function getParentMonthlyStats() {
 export function hasCompletedActivityToday(activityId) {
   const today = new Date().toDateString()
   return getParentCompletions().some(
-    (c) => c.id === activityId && new Date(c.completedAt).toDateString() === today
+    (c) => c.activity_id === activityId && new Date(c.completed_at).toDateString() === today
   )
 }
 
@@ -183,33 +189,82 @@ export function getParentTier() {
   return 0
 }
 
-// Vouchers
+// ── Monthly discount cap ───────────────────────────────────────
+// Module A solo cap: 30% per month
+// Combined Module A + B cap: 40% per month
+// Modules C and D are not subject to the discount cap
+
+export function getMonthlyCapState() {
+  const now = new Date()
+  const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const stored = get(KEYS.monthlyCap, { monthKey: '', soloTotal: 0, combinedTotal: 0, cap_limit: 40 })
+  if (stored.monthKey !== monthKey) {
+    const reset = { monthKey, soloTotal: 0, combinedTotal: 0, cap_limit: 40 }
+    set(KEYS.monthlyCap, reset)
+    return reset
+  }
+  return stored
+}
+
+// ── Vouchers ───────────────────────────────────────────────────
+// Code format: MAL-[MODULE]-[4-CHAR-RANDOM]
+// Module A → MAL-A-xxxx | Module B → MAL-JOIN-xxxx | Module C → MAL-C-xxxx | Module D → MAL-D-xxxx
+
 export function getParentVouchers()  { return get(KEYS.parentVouchers, []) }
 
-export function addParentVoucher(activityId, pct, label) {
-  if (pct <= 0) return // non-discount rewards are tracked in completions only
-  const current = getParentVouchers()
+// Returns { granted: true, code } or { granted: false, reason: '...' }
+export function addParentVoucher(activityId, pct, label, module) {
+  if (pct <= 0) return { granted: false, reason: 'no-discount' }
+
+  const cap = getMonthlyCapState()
+
+  if (module === 'A') {
+    if (cap.soloTotal + pct > 30) {
+      return { granted: false, reason: `Solo activity discount cap reached (30% per month). Resets on the 1st.` }
+    }
+    if (cap.combinedTotal + pct > 40) {
+      return { granted: false, reason: `Combined discount cap reached (40% per month). Resets on the 1st.` }
+    }
+  }
+  if (module === 'B') {
+    if (cap.combinedTotal + pct > 40) {
+      return { granted: false, reason: `Combined discount cap reached (40% per month). Resets on the 1st.` }
+    }
+  }
+
   const now = new Date()
   const expiresAt = new Date(now.getTime() + 30 * 86400000).toISOString()
   const suffix = Math.random().toString(36).slice(2, 6).toUpperCase()
-  const code = `MAL-${activityId.slice(0, 4).toUpperCase()}-${suffix}`
+  const prefix = module === 'B' ? 'JOIN' : (module || 'A')
+  const code = `MAL-${prefix}-${suffix}`
+
   set(KEYS.parentVouchers, [
-    ...current,
-    { id: `v_${Date.now()}`, code, pct, label, issuedAt: now.toISOString(), expiresAt, used: false, source: activityId },
+    ...getParentVouchers(),
+    { id: `v_${Date.now()}`, code, pct, label, issued_at: now.toISOString(), expires_at: expiresAt, used: false, source: activityId, module },
   ])
+
+  // Update cap tracking (only A and B modules count toward the cap)
+  if (module === 'A' || module === 'B') {
+    const updatedCap = getMonthlyCapState()
+    if (module === 'A') updatedCap.soloTotal += pct
+    updatedCap.combinedTotal += pct
+    set(KEYS.monthlyCap, updatedCap)
+  }
+
+  return { granted: true, code }
 }
 
 export function markVoucherUsed(voucherId) {
-  const current = getParentVouchers()
-  set(KEYS.parentVouchers, current.map((v) => (v.id === voucherId ? { ...v, used: true } : v)))
+  set(KEYS.parentVouchers, getParentVouchers().map((v) => (v.id === voucherId ? { ...v, used: true } : v)))
 }
 
 export function getActiveVouchers() {
   const now = new Date()
-  return getParentVouchers().filter((v) => !v.used && new Date(v.expiresAt) > now)
+  return getParentVouchers().filter((v) => !v.used && new Date(v.expires_at || v.expiresAt) > now)
 }
 
-// Joint sessions
+// ── Joint sessions ─────────────────────────────────────────────
+
 export function getParentJointSessions() { return get(KEYS.parentJointSessions, []) }
 
 export function initiateJointSession(activityId) {
@@ -230,7 +285,6 @@ export function initiateJointSession(activityId) {
 }
 
 export function completeJointSide(activityId, side) {
-  // side: 'parent' | 'child'
   const current = getParentJointSessions()
   const updated = current.map((s) => {
     if (s.activityId !== activityId || s.status === 'complete') return s
@@ -246,12 +300,39 @@ export function getJointSession(activityId) {
   return getParentJointSessions().find((s) => s.activityId === activityId && s.status !== 'expired') ?? null
 }
 
-// Flashcards
+// ── Flashcards ─────────────────────────────────────────────────
+
 export function getParentFlashcards() { return get(KEYS.parentFlashcards, []) }
 export function saveParentFlashcard(topicId, front, back) {
-  const current = getParentFlashcards()
-  set(KEYS.parentFlashcards, [...current, { id: `fc_${Date.now()}`, topicId, front, back, createdAt: new Date().toISOString() }])
+  set(KEYS.parentFlashcards, [
+    ...getParentFlashcards(),
+    { id: `fc_${Date.now()}`, topicId, front, back, createdAt: new Date().toISOString() },
+  ])
 }
 export function deleteParentFlashcard(id) {
   set(KEYS.parentFlashcards, getParentFlashcards().filter((f) => f.id !== id))
+}
+
+// ── Life Skills Log ────────────────────────────────────────────
+
+export function getLifeSkillsLog() { return get(KEYS.lifeSkillsLog, []) }
+export function addLifeSkillsEntry(challengeId, rewardGranted) {
+  set(KEYS.lifeSkillsLog, [
+    ...getLifeSkillsLog(),
+    { challenge_id: challengeId, date: new Date().toISOString(), parent_confirmed: true, reward_granted: rewardGranted },
+  ])
+}
+
+// ── Gamification snapshot ──────────────────────────────────────
+// Kept in sync with live values — used for clean Phase 2 DB migration
+
+export function saveGamificationSnapshot() {
+  const streak = getStreak()
+  const current = get(KEYS.gamification, { best_streak: 0 })
+  set(KEYS.gamification, {
+    current_tier: getParentTier(),
+    activities_this_month: getParentMonthlyStats().total,
+    streak_days: streak,
+    best_streak: Math.max(streak, current.best_streak || 0),
+  })
 }
