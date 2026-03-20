@@ -48,14 +48,23 @@ export default function ProgressPanel({ mode, stars, childName }) {
   const name = childName || 'Your Amazing Learner'
   const displayName = childName || 'your learner'
 
-  // Merge base percentages with quiz correct-answer increments (+2% per correct answer, capped at 100%)
+  // Real data sources
   const subjectProgress = getSubjectProgress()
-  const progressAreas = PROGRESS_AREAS.map((area) => ({
-    ...area,
-    pct: area.subjectKey
-      ? Math.min(area.pct + (subjectProgress[area.subjectKey] ?? 0) * 2, 100)
-      : area.pct,
-  }))
+  const moodHistory = getMoodHistory()
+  const craftsCompleted = getCraftsCompleted()
+
+  // Calculate progress purely from activity — no dummy base values
+  const progressAreas = PROGRESS_AREAS.map((area) => {
+    let pct = 0
+    if (area.subjectKey && area.maxAnswers) {
+      pct = Math.min(Math.round(((subjectProgress[area.subjectKey] ?? 0) / area.maxAnswers) * 100), 100)
+    } else if (area.id === 'writing') {
+      pct = Math.min(Math.round((craftsCompleted.length / 6) * 100), 100)
+    } else if (area.id === 'wellbeing') {
+      pct = Math.min(Math.round((moodHistory.length / 20) * 100), 100)
+    }
+    return { ...area, pct }
+  })
 
   useEffect(() => {
     const t = setTimeout(() => setAnimated(true), 100)
@@ -78,7 +87,6 @@ export default function ProgressPanel({ mode, stars, childName }) {
   }, [])
 
   // Last 7 days of mood data for parent view
-  const moodHistory = getMoodHistory()
   const last7 = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(Date.now() - i * 86400000).toDateString()
     return moodHistory.find((m) => m.date === d) ?? { date: d, mood: null }
@@ -86,7 +94,6 @@ export default function ProgressPanel({ mode, stars, childName }) {
 
   // Data for print report
   const earnedBadgeIds = getBadges()
-  const craftsCompleted = getCraftsCompleted()
   const streak = getStreak()
   const totalStars = getStars()
   const earnedBadgeCount = earnedBadgeIds.length
