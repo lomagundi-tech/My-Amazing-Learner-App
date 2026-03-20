@@ -1,5 +1,4 @@
-// Parent Portal activity definitions — Modules A, B, C
-// Module D is Phase 2 scope — not included here
+// Parent Portal activity definitions — Modules A, B, C, D
 
 // ── MODULE A — Solo Parent Activities ─────────────────────────
 export const MODULE_A = [
@@ -230,7 +229,218 @@ export const FLASHCARD_TOPICS = [
   { id: 'planets', label: 'Planets', cards: ['Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune'] },
 ]
 
-// Parent tier definitions
+// ── MODULE D — Extended Activity Bank ────────────────────────
+export const MODULE_D = [
+  // Wellbeing
+  {
+    id: 'steps_together',
+    title: '10,000 Steps Together',
+    emoji: '👣',
+    category: 'Wellbeing',
+    description: 'Log your family step count and confirm you reached 10,000 steps together today.',
+    type: 'steps',
+    childEarns: 80,
+    parentReward: '10% off next purchase',
+    rewardPct: 10,
+    bg: '#E8F5E9',
+  },
+  {
+    id: 'scavenger_hunt',
+    title: 'Outdoor Scavenger Hunt',
+    emoji: '🔍',
+    category: 'Wellbeing',
+    description: 'Complete the outdoor checklist together — tick off each item you find on your walk.',
+    type: 'checklist',
+    childEarns: 70,
+    parentReward: '7.5% off next purchase',
+    rewardPct: 7.5,
+    bg: '#E3F2FD',
+  },
+  {
+    id: 'mindfulness_moment',
+    title: 'Mindfulness Moment',
+    emoji: '🧘',
+    category: 'Wellbeing',
+    description: 'Follow the guided 4-7-8 breathing exercise together for calm and focus.',
+    type: 'guided',
+    childEarns: 50,
+    parentReward: '5% off next purchase',
+    rewardPct: 5,
+    bg: '#F3E5F5',
+  },
+  {
+    id: 'screen_free_evening',
+    title: 'Screen-Free Family Evening',
+    emoji: '🌅',
+    category: 'Wellbeing',
+    description: 'Spend an evening without screens — games, drawing, conversation, or reading together.',
+    type: 'confirm',
+    childEarns: 60,
+    parentReward: '5% off next month',
+    rewardPct: 5,
+    bg: '#FFF8E1',
+  },
+  // Creative
+  {
+    id: 'draw_and_caption',
+    title: 'Draw and Caption',
+    emoji: '🎨',
+    category: 'Creative',
+    description: "Your child draws anything they like — describe the drawing and add a caption here.",
+    type: 'text',
+    childEarns: 55,
+    parentReward: 'Free premium content',
+    rewardPct: 0,
+    bg: '#FCE4EC',
+  },
+  {
+    id: 'story_time_creator',
+    title: 'Story Time Creator',
+    emoji: '📝',
+    category: 'Creative',
+    description: 'Use the prompts below to build a short story together — your story is saved locally.',
+    type: 'story',
+    childEarns: 65,
+    parentReward: '5% off next purchase',
+    rewardPct: 5,
+    bg: '#E8F5E9',
+  },
+  // Values
+  {
+    id: 'random_kindness',
+    title: 'Random Act of Kindness',
+    emoji: '💛',
+    category: 'Values',
+    description: "Your child performs a kind act for someone — describe it here and both confirm.",
+    type: 'text',
+    childEarns: 70,
+    parentReward: '7.5% off next purchase',
+    rewardPct: 7.5,
+    bg: '#FFF8E1',
+  },
+  {
+    id: 'teach_the_parent',
+    title: 'Teach the Parent',
+    emoji: '🎓',
+    category: 'Values',
+    description: 'Your child picks a topic and teaches you about it — rate their explanation 1 to 5.',
+    type: 'rating',
+    childEarns: 80,
+    parentReward: '10% off next purchase',
+    rewardPct: 10,
+    bg: '#E3F2FD',
+  },
+  {
+    id: 'family_values',
+    title: 'Family Values Discussion',
+    emoji: '💬',
+    category: 'Values',
+    description: "This week's topic: discuss what honesty means and share a real example from your own lives.",
+    type: 'confirm',
+    childEarns: 45,
+    parentReward: 'Badge unlock',
+    rewardPct: 0,
+    bg: '#F3E5F5',
+  },
+  // Cultural
+  {
+    id: 'world_food_night',
+    title: 'World Food Night',
+    emoji: '🍜',
+    category: 'Cultural',
+    description: 'Cook a dish from the featured country together and read the country profile below.',
+    type: 'confirm',
+    childEarns: 60,
+    parentReward: '5% off next purchase',
+    rewardPct: 5,
+    bg: '#E8F5E9',
+  },
+  {
+    id: 'language_phrases',
+    title: 'Language Phrase Challenge',
+    emoji: '🗣️',
+    category: 'Cultural',
+    description: 'Learn 5 French phrases together using the pronunciation guide — practise until both are confident.',
+    type: 'phrases',
+    childEarns: 55,
+    parentReward: '5% off next purchase',
+    rewardPct: 5,
+    bg: '#E3F2FD',
+  },
+  {
+    id: 'history_detective',
+    title: 'History Detective',
+    emoji: '🕵️',
+    category: 'Cultural',
+    description: 'Read the clues together and solve the historical mystery before revealing the answer.',
+    type: 'mystery',
+    childEarns: 65,
+    parentReward: '7.5% off next purchase',
+    rewardPct: 7.5,
+    bg: '#FFF8E1',
+  },
+]
+
+// ── Module D content data ─────────────────────────────────────
+
+export const SCAVENGER_CHECKLIST = [
+  'A bird (any kind)',
+  'Something yellow',
+  'Something smooth to touch',
+  'A cloud in an interesting shape',
+  'An insect',
+  'Something that makes a natural sound',
+  'A spider web',
+  'Something that could be older than 100 years',
+]
+
+export const MINDFULNESS_STEPS = [
+  { step: 1, instruction: 'Find a comfortable seated position. Sit up tall and close your eyes.' },
+  { step: 2, instruction: 'Breathe in slowly through your nose — count to 4 in your head.' },
+  { step: 3, instruction: 'Hold your breath gently — count to 7.' },
+  { step: 4, instruction: 'Breathe out slowly through your mouth — count to 8.' },
+  { step: 5, instruction: 'Repeat the cycle two more times. Notice how calm you feel.' },
+]
+
+export const LANGUAGE_PHRASES = [
+  { phrase: 'Bonjour', english: 'Hello', pronunciation: 'Bon-ZHOOR' },
+  { phrase: "S'il vous plaît", english: 'Please', pronunciation: 'Seel-voo-PLAY' },
+  { phrase: 'Merci beaucoup', english: 'Thank you very much', pronunciation: 'Mehr-SEE boh-KOO' },
+  { phrase: "Comment t'appelles-tu?", english: 'What is your name?', pronunciation: 'Koh-mahn tah-PEL-too' },
+  { phrase: "J'aime apprendre", english: 'I love learning', pronunciation: 'ZHEM ah-PRAHN-druh' },
+]
+
+export const HISTORY_MYSTERY = {
+  title: 'The Mystery of the Lost Arctic Expedition',
+  clues: [
+    'In 1845, a famous British explorer set out with 129 men and two ships to find a route through the Arctic, known as the Northwest Passage.',
+    'The ships became locked in ice near King William Island. The entire expedition was never seen alive again, and for over 160 years no one knew exactly what happened.',
+    'In 2014 and 2016, underwater explorers discovered the wrecks of both ships, HMS Erebus and HMS Terror, perfectly preserved on the Canadian Arctic sea floor.',
+  ],
+  question: 'Who was the famous British explorer who led this doomed expedition?',
+  answer: 'Sir John Franklin',
+  funFact: 'The Arctic conditions preserved the ships so well that scientists found tinned food still inside — and used DNA evidence to identify crew members over 170 years later!',
+}
+
+export const STORY_PROMPTS = [
+  { label: 'Your hero is...', placeholder: 'e.g. a brave fox who can speak three languages' },
+  { label: 'The setting is...', placeholder: 'e.g. a hidden library under the sea' },
+  { label: 'The problem to solve is...', placeholder: 'e.g. all the books have had their words stolen' },
+]
+
+export const TEACH_TOPICS = [
+  'Dinosaurs',
+  'Space and the Solar System',
+  'How Plants Grow',
+  'Countries of the World',
+  'Animals and Their Habitats',
+  'How Rainbows Are Made',
+  'The Water Cycle',
+  'My Favourite Book or Film',
+]
+
+// ── Parent tier definitions ───────────────────────────────────
+
 export const PARENT_TIERS = [
   { tier: 0, label: 'Getting Started', badge: '—',         colour: '#9E9E9E', requirement: 'Complete your first activity' },
   { tier: 1, label: 'Engaged Parent',  badge: 'Bronze Shield', colour: '#CD7F32', requirement: '5 activities this month' },
