@@ -7,7 +7,9 @@ import {
   getParentFlashcards, saveParentFlashcard, deleteParentFlashcard,
   addLifeSkillsEntry, saveGamificationSnapshot, addStars,
   getMonthlyCapState,
+  getStars, getCorrectCount, getSubjectProgress, getLevelsCompleted, getStreak,
 } from '../utils/storage'
+import { SUBJECTS, LEVELS } from '../data/quizData'
 import {
   MODULE_A, MODULE_B, MODULE_C, MODULE_D, PARENT_TIERS,
   SPELLING_BEE_QUESTIONS, GENERAL_KNOWLEDGE_QUESTIONS, MATHS_MENTAL_QUESTIONS,
@@ -822,6 +824,224 @@ function ActivityCard({ activity, module, onOpen, doneToday, jointSession }) {
 }
 
 // ── Main panel ─────────────────────────────────────────────────
+// ── Child Quiz Snapshot ────────────────────────────────────────
+const HELP_TIPS = {
+  maths:   'Try counting objects around the house together — small steps build big confidence!',
+  english: 'Reading aloud together for just 10 minutes a day makes a huge difference.',
+  science: 'Science questions come alive when you explore simple experiments at home!',
+  general: 'Exploring the world through books, maps, or documentaries boosts general knowledge fast.',
+}
+
+function ChildQuizSnapshot({ childName }) {
+  const subjectProgress = getSubjectProgress()
+  const totalCorrect    = getCorrectCount()
+  const stars           = getStars()
+  const streak          = getStreak()
+  const levelsCompleted = getLevelsCompleted()
+  const name            = childName || 'your learner'
+  const hasActivity     = totalCorrect > 0 || stars > 0
+
+  const quizSubjects = SUBJECTS.filter((s) => s.id !== 'all')
+  const maxCount = Math.max(...quizSubjects.map((s) => subjectProgress[s.id] ?? 0), 1)
+
+  const attempted = quizSubjects.filter((s) => (subjectProgress[s.id] ?? 0) > 0)
+  const weakest   = attempted.length
+    ? attempted.reduce((a, b) => (subjectProgress[a.id] ?? 0) <= (subjectProgress[b.id] ?? 0) ? a : b)
+    : null
+
+  return (
+    <div style={snap.wrapper}>
+      <div style={snap.header}>
+        <span style={snap.headerIcon} aria-hidden="true">📊</span>
+        <h3 style={snap.title}>
+          {childName ? `${childName}'s Quiz Activity` : "Your Learner's Quiz Activity"}
+        </h3>
+      </div>
+
+      {!hasActivity ? (
+        <div style={snap.zeroState}>
+          <span style={snap.zeroRocket} aria-hidden="true">🚀</span>
+          <p style={snap.zeroHead}>No quiz activity yet!</p>
+          <p style={snap.zeroSub}>
+            Switch to <strong>Child mode</strong> using the toggle at the top, then hand the
+            device to {name}. Their results will appear here as they learn.
+          </p>
+          <div style={snap.zeroHint}>
+            <span style={snap.zeroHintDot} aria-hidden="true" />
+            Use the <strong>Parent / Child</strong> pill in the header to switch
+          </div>
+        </div>
+      ) : (
+        <>
+          <div style={snap.statsRow}>
+            {[
+              { label: 'Stars',      value: stars,        emoji: '⭐', bg: '#FFB347' },
+              { label: 'Correct',    value: totalCorrect, emoji: '✅', bg: '#4ECDC4' },
+              { label: 'Day Streak', value: streak,       emoji: '🔥', bg: '#6B3FA0' },
+            ].map((s) => (
+              <div key={s.label} style={{ ...snap.statPill, background: s.bg }}>
+                <span style={snap.statEmoji} aria-hidden="true">{s.emoji}</span>
+                <span style={snap.statNum}>{s.value}</span>
+                <span style={snap.statLbl}>{s.label}</span>
+              </div>
+            ))}
+          </div>
+
+          <div style={snap.section}>
+            <p style={snap.sectionLabel}>By subject</p>
+            {quizSubjects.map((s) => {
+              const count = subjectProgress[s.id] ?? 0
+              const pct   = Math.round((count / maxCount) * 100)
+              return (
+                <div key={s.id} style={snap.barRow}>
+                  <span style={snap.barSubject}>{s.emoji} {s.label}</span>
+                  <div style={snap.barTrack}>
+                    <div style={{ ...snap.barFill, width: `${pct}%` }} />
+                  </div>
+                  <span style={snap.barCount}>{count}</span>
+                </div>
+              )
+            })}
+          </div>
+
+          <div style={snap.section}>
+            <p style={snap.sectionLabel}>Levels explored</p>
+            <div style={snap.levelsRow}>
+              {LEVELS.map((l) => {
+                const done = levelsCompleted.includes(l.id)
+                return (
+                  <div
+                    key={l.id}
+                    style={{
+                      ...snap.levelPill,
+                      background: done ? l.colour : 'rgba(0,0,0,0.05)',
+                      color: done ? '#fff' : 'var(--text-mid)',
+                    }}
+                  >
+                    {l.emoji} {l.label}{done ? ' ✓' : ''}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {weakest && (
+            <div style={snap.tip}>
+              <span style={snap.tipIcon} aria-hidden="true">💡</span>
+              <p style={snap.tipText}>
+                <strong>{weakest.emoji} {weakest.label}</strong> has the fewest correct answers.{' '}
+                {HELP_TIPS[weakest.id]}
+              </p>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
+const snap = {
+  wrapper: {
+    background: '#fff',
+    borderRadius: 'var(--radius-card)',
+    boxShadow: 'var(--shadow-card)',
+    padding: '20px 24px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+  },
+  header: { display: 'flex', alignItems: 'center', gap: '10px' },
+  headerIcon: { fontSize: '1.3rem' },
+  title: {
+    fontFamily: "'Baloo 2', cursive",
+    fontWeight: 800,
+    fontSize: '1.1rem',
+    color: 'var(--plum)',
+    margin: 0,
+  },
+  zeroState: { textAlign: 'center', padding: '16px 0 8px' },
+  zeroRocket: { fontSize: '3rem', display: 'block', marginBottom: '12px' },
+  zeroHead: {
+    fontFamily: "'Baloo 2', cursive",
+    fontWeight: 800,
+    fontSize: '1.2rem',
+    color: 'var(--plum)',
+    margin: '0 0 8px',
+  },
+  zeroSub: {
+    color: 'var(--text-mid)',
+    fontSize: '0.9rem',
+    lineHeight: 1.6,
+    margin: '0 auto 16px',
+    maxWidth: '340px',
+  },
+  zeroHint: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
+    background: '#f5f0fa',
+    borderRadius: 'var(--radius-pill)',
+    padding: '8px 16px',
+    fontSize: '0.82rem',
+    color: 'var(--violet)',
+    fontWeight: 600,
+  },
+  zeroHintDot: {
+    width: '8px',
+    height: '8px',
+    borderRadius: '50%',
+    background: 'var(--violet)',
+    flexShrink: 0,
+  },
+  statsRow: { display: 'flex', gap: '10px' },
+  statPill: {
+    flex: 1,
+    borderRadius: '14px',
+    padding: '10px 8px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '2px',
+  },
+  statEmoji: { fontSize: '1.2rem' },
+  statNum: { fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: '1.4rem', color: '#fff' },
+  statLbl: { fontSize: '0.65rem', color: 'rgba(255,255,255,0.9)', fontWeight: 700, textAlign: 'center' },
+  section: { display: 'flex', flexDirection: 'column', gap: '8px' },
+  sectionLabel: {
+    fontSize: '0.72rem',
+    fontWeight: 700,
+    color: 'var(--text-mid)',
+    margin: 0,
+    textTransform: 'uppercase',
+    letterSpacing: '0.06em',
+  },
+  barRow: { display: 'flex', alignItems: 'center', gap: '10px' },
+  barSubject: { width: '90px', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-dark)', flexShrink: 0 },
+  barTrack: { flex: 1, height: '10px', background: 'rgba(0,0,0,0.06)', borderRadius: '5px', overflow: 'hidden' },
+  barFill: { height: '100%', background: 'var(--violet)', borderRadius: '5px', transition: 'width 1.2s ease' },
+  barCount: { width: '24px', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-mid)', textAlign: 'right' },
+  levelsRow: { display: 'flex', gap: '8px', flexWrap: 'wrap' },
+  levelPill: {
+    padding: '6px 14px',
+    borderRadius: 'var(--radius-pill)',
+    fontSize: '0.82rem',
+    fontWeight: 700,
+    fontFamily: "'Nunito', sans-serif",
+  },
+  tip: {
+    display: 'flex',
+    gap: '10px',
+    alignItems: 'flex-start',
+    background: '#fffbf0',
+    border: '1.5px solid #FFB347',
+    borderRadius: '14px',
+    padding: '12px 16px',
+  },
+  tipIcon: { fontSize: '1.1rem', flexShrink: 0, marginTop: '1px' },
+  tipText: { margin: 0, fontSize: '0.85rem', lineHeight: 1.6, color: 'var(--text-dark)' },
+}
+
+// ── Main panel ─────────────────────────────────────────────────
 export default function ParentActivitiesPanel({ childName }) {
   const [activeModule, setActiveModule] = useState('A')
   const [activeModal, setActiveModal] = useState(null)
@@ -920,6 +1140,7 @@ export default function ParentActivitiesPanel({ childName }) {
       </div>
 
       <TierBanner stats={stats} />
+      <ChildQuizSnapshot childName={childName} />
 
       {/* Cap message */}
       {capMsg && (
