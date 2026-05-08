@@ -63,3 +63,15 @@
   from { transform: scale(0.8); opacity: 0; }
   to   { transform: scale(1); opacity: 1; }
 }
+
+@keyframes pulseRings {
+  0%   { box-shadow: 0 0 0 0 rgba(78, 205, 196, 0.6); }
+  70%  { box-shadow: 0 0 0 16px rgba(78, 205, 196, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(78, 205, 196, 0); }
+}
+
+@keyframes mapPulse {
+  0%   { transform: scale(1);   opacity: 1; }
+  50%  { transform: scale(1.4); opacity: 0.5; }
+  100% { transform: scale(1);   opacity: 1; }
+}

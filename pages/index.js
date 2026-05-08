@@ -12,6 +12,8 @@ import ProgressPanel from '../src/components/ProgressPanel'
 import CraftsPanel from '../src/components/CraftsPanel'
 import RewardsPanel from '../src/components/RewardsPanel'
 import SENPanel from '../src/components/SENPanel'
+import AdventurePanel from '../src/components/AdventurePanel'
+import MyAreaPanel from '../src/components/MyAreaPanel'
 import NameModal from '../src/components/NameModal'
 import FloatingSENButton from '../src/components/FloatingSENButton'
 
@@ -22,6 +24,7 @@ import {
   updateStreak, getStreak,
   earnBadge,
   setLastVisit,
+  getDeviceId,
 } from '../src/utils/storage'
 
 export default function App() {
@@ -34,6 +37,7 @@ export default function App() {
   const [streak, setStreak]     = useState(0)
   const [showNameModal, setShowNameModal] = useState(false)
   const [hydrated, setHydrated] = useState(false)
+  const [deviceId, setDeviceId] = useState('')
 
   // Hydrate from localStorage on mount (client-side only)
   useEffect(() => {
@@ -53,6 +57,7 @@ export default function App() {
     setStars(savedStars)
     setBadges(getBadges()) // re-read after potential badge awards
     setStreak(currentStreak)
+    setDeviceId(getDeviceId())
     setLastVisit()
 
     if (!savedName) setShowNameModal(true)
@@ -91,7 +96,9 @@ export default function App() {
     <ProgressPanel  key={panelKey} {...sharedProps} childName={childName} stars={stars} />,
     <CraftsPanel    key={panelKey} {...sharedProps} onBadgesChange={refreshBadges} />,
     <RewardsPanel   key={panelKey} {...sharedProps} stars={stars} badges={badges} />,
-    <SENPanel       key={panelKey} {...sharedProps} />,
+    <SENPanel         key={panelKey} {...sharedProps} />,
+    <AdventurePanel   key={panelKey} childName={childName} deviceId={deviceId} onStarsChange={refreshStars} onBadgesChange={refreshBadges} />,
+    <MyAreaPanel      key={panelKey} childName={childName} onStarsChange={refreshStars} onBadgesChange={refreshBadges} />,
   ]
 
   return (

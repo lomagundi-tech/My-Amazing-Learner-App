@@ -6,6 +6,8 @@ const TABS = [
   { id: 4, label: 'Crafts',     emoji: '🪡' },
   { id: 5, label: 'Rewards',    emoji: '🎖️' },
   { id: 6, label: 'SEN Tools',  emoji: '🌈' },
+  { id: 7, label: 'Adventures', emoji: '🗺️' },
+  { id: 8, label: 'My Area',    emoji: '📍' },
 ]
 
 export default function TabNav({ activeTab, onTabChange, mode }) {

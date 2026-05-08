@@ -22,6 +22,16 @@ const KEYS = {
   monthlyCap:          'mal_monthly_cap',
   gamification:        'mal_gamification',
   lifeSkillsLog:       'mal_life_skills_log',
+  // Phase 4 — Adventure Mode
+  deviceId:            'mal_device_id',
+  trailProgress:       'mal_trail_progress',
+  trailSyncedData:     'mal_trail_synced_data',
+  // Phase 4 — My Area
+  myAreaCoords:        'mal_myarea_coords',
+  myAreaEnabled:       'mal_myarea_enabled',
+  myAreaFacts:         'mal_myarea_facts',
+  myAreaCompleted:     'mal_myarea_completed',
+  myAreaUnlock:        'mal_myarea_unlock',
 }
 
 function get(key, fallback = null) {
@@ -335,4 +345,112 @@ export function saveGamificationSnapshot() {
     streak_days: streak,
     best_streak: Math.max(streak, current.best_streak || 0),
   })
+}
+
+// ── Device Identity ────────────────────────────────────────────
+// Generated once on first app load. Stable across refreshes. Never regenerated.
+
+function generateUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0
+    const v = c === 'x' ? r : (r & 0x3 | 0x8)
+    return v.toString(16)
+  })
+}
+
+export function getDeviceId() {
+  const existing = get(KEYS.deviceId, null)
+  if (existing) return existing
+  const newId = generateUUID()
+  set(KEYS.deviceId, newId)
+  return newId
+}
+
+// ── Trail Progress ─────────────────────────────────────────────
+
+export function getTrailProgress()  { return get(KEYS.trailProgress, null) }
+export function setTrailProgress(p) { set(KEYS.trailProgress, p) }
+
+export function startTrail(trailId, allStopsData) {
+  set(KEYS.trailProgress, {
+    trailId,
+    status: 'IN_PROGRESS',
+    stopsCompleted: [],
+    discountCode: null,
+    discountCodeIssuedAt: null,
+    discountCodeExpiresAt: null,
+    startedAt: new Date().toISOString(),
+    completedAt: null,
+  })
+  const existing = get(KEYS.trailSyncedData, {})
+  set(KEYS.trailSyncedData, {
+    ...existing,
+    [trailId]: { syncedAt: new Date().toISOString(), stops: allStopsData },
+  })
+}
+
+export function markTrailStopComplete(stopNumber) {
+  const progress = getTrailProgress()
+  if (!progress) return null
+  if (progress.stopsCompleted.includes(stopNumber)) return { stopsCompleted: progress.stopsCompleted, status: progress.status }
+  const stopsCompleted = [...progress.stopsCompleted, stopNumber]
+  let status = progress.status
+  if (stopsCompleted.length >= 6 && status === 'IN_PROGRESS') status = 'REWARD_UNLOCKED'
+  if (stopsCompleted.length === 8) status = 'FULLY_COMPLETED'
+  const updated = {
+    ...progress,
+    stopsCompleted,
+    status,
+    completedAt: stopsCompleted.length === 8 ? new Date().toISOString() : progress.completedAt,
+  }
+  set(KEYS.trailProgress, updated)
+  return { stopsCompleted, status }
+}
+
+export function saveDiscountCode(code, issuedAt, expiresAt) {
+  const progress = getTrailProgress()
+  if (!progress) return
+  set(KEYS.trailProgress, { ...progress, discountCode: code, discountCodeIssuedAt: issuedAt, discountCodeExpiresAt: expiresAt })
+}
+
+export function getTrailSyncedData(trailId) {
+  const all = get(KEYS.trailSyncedData, {})
+  return all[trailId] ?? null
+}
+
+// ── My Area ────────────────────────────────────────────────────
+
+export function getMyAreaCoords()        { return get(KEYS.myAreaCoords, null) }
+export function setMyAreaCoords(coords)  { set(KEYS.myAreaCoords, coords) }
+
+export function getMyAreaEnabled()       { return get(KEYS.myAreaEnabled, false) }
+export function setMyAreaEnabled(val)    { set(KEYS.myAreaEnabled, val) }
+
+export function getMyAreaFacts()         { return get(KEYS.myAreaFacts, []) }
+export function setMyAreaFacts(facts)    { set(KEYS.myAreaFacts, facts) }
+
+export function getMyAreaCompleted()     { return get(KEYS.myAreaCompleted, []) }
+export function markFactComplete(id) {
+  const current = getMyAreaCompleted()
+  if (!current.includes(id)) set(KEYS.myAreaCompleted, [...current, id])
+}
+
+export function getMyAreaTodayIndex() {
+  const facts = getMyAreaFacts()
+  if (!facts.length) return 0
+  const coords = getMyAreaCoords()
+  const setupDate = coords?.setupDate
+  if (!setupDate) return 0
+  const daysSinceSetup = Math.floor(
+    (new Date().setHours(0, 0, 0, 0) - new Date(setupDate).setHours(0, 0, 0, 0)) / 86400000
+  )
+  return Math.min(daysSinceSetup, facts.length - 1)
+}
+
+export function clearMyArea() {
+  set(KEYS.myAreaCoords,    null)
+  set(KEYS.myAreaEnabled,   false)
+  set(KEYS.myAreaFacts,     [])
+  set(KEYS.myAreaCompleted, [])
+  set(KEYS.myAreaUnlock,    null)
 }
