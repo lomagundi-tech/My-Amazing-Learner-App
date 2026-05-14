@@ -1,8 +1,13 @@
 import { BADGES } from '../data/badgesData'
-import { getStars } from '../utils/storage'
+import { t } from '../utils/i18n'
 
-export default function RewardsPanel({ mode, badges, stars }) {
+const BADGE_KEY_MAP = {
+  explorer_full: 'full_explorer',
+}
+
+export default function RewardsPanel({ mode, badges, stars, lang = 'en' }) {
   const earnedIds = badges ?? []
+  const badgeTotal = BADGES.length
 
   return (
     <div className="panel-enter" style={styles.wrapper}>
@@ -11,11 +16,11 @@ export default function RewardsPanel({ mode, badges, stars }) {
         <span style={styles.starEmoji} aria-hidden="true">⭐</span>
         <div>
           <div style={styles.starNumber}>{stars}</div>
-          <div style={styles.starLabel}>Total Stars Earned</div>
+          <div style={styles.starLabel}>{t('rewards_star_label', lang)}</div>
         </div>
         {stars >= 5 && (
           <div style={styles.milestone}>
-            {stars >= 20 ? '🏆 Star Champion!' : stars >= 10 ? '🌟 Star Collector!' : '💛 Keep going!'}
+            {stars >= 20 ? t('rewards_milestone_champion', lang) : stars >= 10 ? t('rewards_milestone_collector', lang) : t('rewards_milestone_keep_going', lang)}
           </div>
         )}
       </div>
@@ -23,7 +28,7 @@ export default function RewardsPanel({ mode, badges, stars }) {
       {/* Badges */}
       <div>
         <h2 style={styles.sectionTitle}>
-          My Badges <span style={styles.badgeCount}>{earnedIds.length}/8</span>
+          {t('rewards_badge_heading', lang)} <span style={styles.badgeCount}>{earnedIds.length}/{badgeTotal}</span>
         </h2>
         <div style={styles.grid}>
           {BADGES.map((badge) => {
@@ -36,14 +41,14 @@ export default function RewardsPanel({ mode, badges, stars }) {
                   filter: earned ? 'none' : 'grayscale(1)',
                   opacity: earned ? 1 : 0.55,
                 }}
-                title={earned ? `Earned: ${badge.unlock}` : `Locked: ${badge.unlock}`}
+                title={`${earned ? t('rewards_badge_earned_prefix', lang) : t('rewards_badge_locked_prefix', lang)} ${t(`badge_${BADGE_KEY_MAP[badge.id] || badge.id}_unlock`, lang)}`}
               >
                 <span style={styles.badgeEmoji} aria-hidden="true">
                   {earned ? badge.emoji : '🔒'}
                 </span>
-                <span style={styles.badgeLabel}>{badge.label}</span>
+                <span style={styles.badgeLabel}>{t(`badge_${BADGE_KEY_MAP[badge.id] || badge.id}_label`, lang)}</span>
                 {!earned && (
-                  <span style={styles.badgeHint}>{badge.unlock}</span>
+                  <span style={styles.badgeHint}>{t(`badge_${BADGE_KEY_MAP[badge.id] || badge.id}_unlock`, lang)}</span>
                 )}
               </div>
             )
@@ -54,9 +59,9 @@ export default function RewardsPanel({ mode, badges, stars }) {
       {/* Parent view note */}
       {mode === 'parent' && (
         <div style={styles.parentNote}>
-          <strong>🦉 Parent note:</strong> Badges are stored on this device. Each new badge reflects a real learning milestone.
-          {earnedIds.length < 8 && (
-            <> Your learner has <strong>{8 - earnedIds.length}</strong> badges still to unlock — great motivation for the week ahead!</>
+          <strong>🦉</strong> {t('rewards_parent_note', lang)}
+          {earnedIds.length < badgeTotal && (
+            <> {t('rewards_badges_remaining', lang).replace('{n}', badgeTotal - earnedIds.length)}</>
           )}
         </div>
       )}

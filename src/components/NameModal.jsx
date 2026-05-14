@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { setChildName } from '../utils/storage'
+import { t } from '../utils/i18n'
 
-export default function NameModal({ onSave }) {
+export default function NameModal({ onSave, lang = 'en' }) {
   const [name, setName] = useState('')
 
   function handleSubmit(e) {
@@ -16,14 +17,14 @@ export default function NameModal({ onSave }) {
     <div style={styles.overlay} role="dialog" aria-modal="true" aria-label="Enter child's name">
       <div style={styles.modal}>
         <span style={styles.emoji} aria-hidden="true">🦄</span>
-        <h2 style={styles.title}>Welcome to My Amazing Learner!</h2>
-        <p style={styles.sub}>What&apos;s your name? We&apos;ll make the app just for you!</p>
+        <h2 style={styles.title}>{t('name_modal_title', lang)}</h2>
+        <p style={styles.sub}>{t('name_modal_sub', lang)}</p>
         <form onSubmit={handleSubmit} style={styles.form}>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Type your name here…"
+            placeholder={t('name_modal_placeholder', lang)}
             maxLength={30}
             autoFocus
             style={styles.input}
@@ -38,10 +39,10 @@ export default function NameModal({ onSave }) {
               cursor: name.trim() ? 'pointer' : 'not-allowed',
             }}
           >
-            {"Let's go! 🚀"}
+            {t('name_modal_submit', lang)}
           </button>
         </form>
-        <button onClick={() => onSave('')} style={styles.skip}>Skip for now</button>
+        <button onClick={() => onSave('')} style={styles.skip}>{t('name_modal_skip', lang)}</button>
       </div>
     </div>
   )

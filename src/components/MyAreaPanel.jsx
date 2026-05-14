@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { LOCAL_FACTS, CATEGORY_LABELS, CATEGORY_EMOJI } from '../data/localFactsData'
+import { LOCAL_FACTS, CATEGORY_EMOJI } from '../data/localFactsData'
 import { findLocalFacts, filterByCategory, sortByDistance } from '../utils/localFacts'
 import { launchConfetti } from '../utils/confetti'
 import {
@@ -11,6 +11,7 @@ import {
   clearMyArea,
   addStars, earnBadge,
 } from '../utils/storage'
+import { t } from '../utils/i18n'
 
 const UK_POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]?\d[A-Z]{2}$/
 
@@ -18,7 +19,7 @@ function validatePostcodeFormat(raw) {
   return UK_POSTCODE_REGEX.test(raw.replace(/\s/g, '').toUpperCase())
 }
 
-export default function MyAreaPanel({ childName, onStarsChange, onBadgesChange }) {
+export default function MyAreaPanel({ onStarsChange, onBadgesChange, lang = 'en' }) {
   const [screen, setScreen]                 = useState('entry')
   const [postcode, setPostcode]             = useState('')
   const [postcodeError, setPostcodeError]   = useState(null)
@@ -71,7 +72,7 @@ export default function MyAreaPanel({ childName, onStarsChange, onBadgesChange }
     setPostcodeError(null)
 
     if (!validatePostcodeFormat(postcode)) {
-      setPostcodeError('Please enter a valid UK postcode (e.g. PO12 1LE)')
+      setPostcodeError(t('myarea_postcode_error', lang))
       return
     }
 
@@ -86,7 +87,7 @@ export default function MyAreaPanel({ childName, onStarsChange, onBadgesChange }
       })
       const data = await res.json()
       if (!res.ok) {
-        setPostcodeError(data.error || 'Please enter a valid UK postcode (e.g. PO12 1LE)')
+        setPostcodeError(data.error || t('myarea_postcode_error', lang))
         setScreen('entry')
         return
       }
@@ -107,7 +108,7 @@ export default function MyAreaPanel({ childName, onStarsChange, onBadgesChange }
       setPostcode('') // discard postcode from state — never persisted
       animateDiscovery(sorted.length)
     } catch {
-      setPostcodeError('Could not look up your postcode. Please try again.')
+      setPostcodeError(t('myarea_postcode_api_error', lang))
       setScreen('entry')
     }
   }
@@ -133,7 +134,7 @@ export default function MyAreaPanel({ childName, onStarsChange, onBadgesChange }
 
   function handleChangeArea() {
     const confirmed = window.confirm(
-      'This will replace your current local facts. All your completion progress will be reset. Are you sure?'
+      t('myarea_change_confirm', lang)
     )
     if (!confirmed) return
     clearMyArea()
@@ -195,30 +196,28 @@ export default function MyAreaPanel({ childName, onStarsChange, onBadgesChange }
       {/* ── Entry screen ── */}
       {screen === 'entry' && (
         <div>
-          <h2 style={s.heading}>Discover Your Area 📍</h2>
-          <p style={s.sub}>Enter your home postcode to find amazing local facts</p>
+          <h2 style={s.heading}>{t('myarea_heading', lang)}</h2>
+          <p style={s.sub}>{t('myarea_sub', lang)}</p>
 
           <div style={s.entryCard}>
             <div style={{ textAlign: 'center', marginBottom: 24 }}>
               <span style={{ fontSize: 52 }}>🗺️</span>
-              <h3 style={s.entryTitle}>Find Your Local Discoveries</h3>
-              <p style={s.entryDesc}>
-                We&apos;ll find fascinating facts about history, science, and more — right on your doorstep! A new fact unlocks every day.
-              </p>
+              <h3 style={s.entryTitle}>{t('myarea_entry_title', lang)}</h3>
+              <p style={s.entryDesc}>{t('myarea_entry_desc', lang)}</p>
             </div>
 
             <p style={{ ...s.privacyNote, marginTop: 0, marginBottom: 16 }}>
-              🔒 Your postcode is used only to find local content. It is never stored or shared.
+              {t('myarea_privacy_note', lang)}
             </p>
 
             <form onSubmit={handlePostcodeSubmit}>
-              <label style={s.label} htmlFor="postcode-input">Your Postcode</label>
+              <label style={s.label} htmlFor="postcode-input">{t('myarea_postcode_label', lang)}</label>
               <input
                 id="postcode-input"
                 type="text"
                 value={postcode}
                 onChange={(e) => { setPostcode(e.target.value.toUpperCase()); setPostcodeError(null) }}
-                placeholder="e.g. PO12 1LE"
+                placeholder={t('myarea_postcode_placeholder', lang)}
                 style={{
                   ...s.input,
                   borderColor: postcodeError ? 'var(--coral)' : 'rgba(61,26,94,0.2)',
@@ -228,11 +227,11 @@ export default function MyAreaPanel({ childName, onStarsChange, onBadgesChange }
               />
               {postcodeError && <p style={s.fieldError}>{postcodeError}</p>}
               <button type="submit" style={{ ...s.btn, background: 'var(--plum)' }}>
-                Find My Local Facts! 🔍
+                {t('myarea_postcode_submit', lang)}
               </button>
             </form>
 
-            <button style={s.skipBtn} onClick={handleSkip}>Skip for now</button>
+            <button style={s.skipBtn} onClick={handleSkip}>{t('myarea_skip', lang)}</button>
           </div>
         </div>
       )}
@@ -245,8 +244,8 @@ export default function MyAreaPanel({ childName, onStarsChange, onBadgesChange }
           </div>
           {discoveredCount === 0 ? (
             <>
-              <h2 style={s.heading}>Finding amazing facts near you...</h2>
-              <p style={s.sub}>Searching for local discoveries</p>
+              <h2 style={s.heading}>{t('myarea_loading_heading', lang)}</h2>
+              <p style={s.sub}>{t('myarea_loading_sub', lang)}</p>
             </>
           ) : (
             <h2 style={{ ...s.heading, animation: 'countUp 0.3s ease' }}>
@@ -281,7 +280,7 @@ export default function MyAreaPanel({ childName, onStarsChange, onBadgesChange }
                 }}
               >
                 {cat !== 'All' && CATEGORY_EMOJI[cat] ? `${CATEGORY_EMOJI[cat]} ` : ''}
-                {CATEGORY_LABELS[cat] || cat}
+                {cat === 'All' ? t('quiz_subject_all', lang) : t(`myarea_cat_${cat.toLowerCase()}`, lang)}
               </button>
             ))}
           </div>
@@ -289,7 +288,7 @@ export default function MyAreaPanel({ childName, onStarsChange, onBadgesChange }
           {/* All caught up state */}
           {allDone && todayIndex >= facts.length - 1 && (
             <div style={s.caughtUpBanner}>
-              🌟 You&apos;ve discovered everything near your home! Your next local discovery unlocks in {hoursUntilMidnight} hour{hoursUntilMidnight !== 1 ? 's' : ''}.
+              {t('myarea_caught_up', lang)}
             </div>
           )}
 
@@ -326,13 +325,13 @@ export default function MyAreaPanel({ childName, onStarsChange, onBadgesChange }
                       </p>
                       <p style={s.factCardLocation}>{fact.locationName}</p>
                       <div style={s.factCardMeta}>
-                        <span style={s.currTag}>{CATEGORY_LABELS[fact.category] || fact.category}</span>
+                        <span style={s.currTag}>{t(`myarea_cat_${fact.category.toLowerCase()}`, lang)}</span>
                         {isUnlocked && !isDone && <span style={s.starsChip}>+{fact.starsReward}⭐</span>}
-                        {isDone && <span style={s.doneLabel}>Completed</span>}
-                        {isToday && <span style={s.todayBadge}>Today&apos;s Discovery!</span>}
+                        {isDone && <span style={s.doneLabel}>{t('myarea_fact_completed', lang)}</span>}
+                        {isToday && <span style={s.todayBadge}>{t('myarea_fact_today', lang)}</span>}
                         {!isUnlocked && (
                           <span style={s.lockNote}>
-                            {daysAway === 1 ? 'Unlocks tomorrow' : `Unlocks in ${daysAway} days`}
+                            {daysAway === 1 ? t('myarea_unlock_tomorrow', lang) : t('myarea_unlock_days', lang).replace('{n}', daysAway)}
                           </span>
                         )}
                       </div>
@@ -347,20 +346,20 @@ export default function MyAreaPanel({ childName, onStarsChange, onBadgesChange }
             <div style={s.emptyState}>
               <span style={{ fontSize: 40 }}>🔍</span>
               <p style={{ color: 'var(--text-mid)', marginBottom: 12 }}>
-                No {CATEGORY_LABELS[category] || category} facts near you yet.
+                {t('myarea_empty_category', lang)}
               </p>
               <button
                 style={{ ...s.catChip, background: 'var(--plum)', color: '#fff' }}
                 onClick={() => setCategory('All')}
               >
-                Show all facts
+                {t('myarea_show_all', lang)}
               </button>
             </div>
           )}
 
           <div style={s.changeAreaRow}>
-            <button style={s.changeAreaBtn} onClick={handleChangeArea}>Change location</button>
-            <p style={s.privacyNote}>🔒 Your postcode is never stored</p>
+            <button style={s.changeAreaBtn} onClick={handleChangeArea}>{t('myarea_change_location', lang)}</button>
+            <p style={s.privacyNote}>{t('myarea_privacy_footer', lang)}</p>
           </div>
         </div>
       )}
@@ -384,20 +383,20 @@ export default function MyAreaPanel({ childName, onStarsChange, onBadgesChange }
                   style={{ ...s.btn, background: '#fff', color: 'var(--plum)', width: 'auto', padding: '14px 32px' }}
                   onClick={() => { setShowLegendOverlay(false); setScreen('feed') }}
                 >
-                  Brilliant! 🎉
+                  {t('myarea_legend_button', lang)}
                 </button>
               </div>
             )}
 
-            <button style={s.back} onClick={() => { setScreen('feed'); setActiveFact(null) }}>← Back</button>
+            <button style={s.back} onClick={() => { setScreen('feed'); setActiveFact(null) }}>{t('adventure_back', lang)}</button>
 
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
               <div style={s.factBadge}>
-                {CATEGORY_EMOJI[activeFact.category]} {CATEGORY_LABELS[activeFact.category] || activeFact.category}
+                {CATEGORY_EMOJI[activeFact.category]} {t(`myarea_cat_${activeFact.category.toLowerCase()}`, lang)}
               </div>
               {activeFact.distanceMiles != null && (
                 <div style={s.distanceBadge}>
-                  📍 {activeFact.distanceMiles.toFixed(1)} miles from your home
+                  📍 {activeFact.distanceMiles.toFixed(1)} {t('myarea_distance', lang)}
                 </div>
               )}
             </div>
@@ -417,11 +416,11 @@ export default function MyAreaPanel({ childName, onStarsChange, onBadgesChange }
             </div>
 
             {/* Quiz section */}
-            <h3 style={{ fontFamily: "'Baloo 2', sans-serif", color: 'var(--plum)', marginBottom: 4 }}>🧩 Quiz Time!</h3>
+            <h3 style={{ fontFamily: "'Baloo 2', sans-serif", color: 'var(--plum)', marginBottom: 4 }}>{t('myarea_quiz_heading', lang)}</h3>
 
             {alreadyDone && quizResult === null && (
               <div style={s.alreadyDoneBanner}>
-                You&apos;ve already completed this one — read it again for fun!
+                {t('myarea_already_done', lang)}
               </div>
             )}
 
@@ -463,28 +462,28 @@ export default function MyAreaPanel({ childName, onStarsChange, onBadgesChange }
                   </p>
                 )}
                 <button style={{ ...s.btn, background: 'var(--plum)' }} onClick={() => { setScreen('feed'); setActiveFact(null) }}>
-                  Back to My Area →
+                  {t('myarea_back', lang)}
                 </button>
               </div>
             )}
 
             {quizResult === 'wrong' && (
               <div style={s.wrongFeedback}>
-                <p style={s.wrongMsg}>Not quite! Look at the fact above and try again. 💪</p>
+                <p style={s.wrongMsg}>{t('myarea_quiz_wrong', lang)}</p>
                 <button
                   style={{ ...s.btn, background: 'var(--coral)' }}
                   onClick={() => { setQuizSelected(null); setQuizResult(null) }}
                 >
-                  Try Again
+                  {t('myarea_quiz_try_again', lang)}
                 </button>
               </div>
             )}
 
             {!quizResult && !alreadyDone && (
-              <p style={s.hintText}>Answer correctly to earn +{activeFact.starsReward} Stars ⭐</p>
+              <p style={s.hintText}>{t('myarea_quiz_hint', lang)}</p>
             )}
 
-            <p style={{ ...s.hintText, marginTop: 8 }}>Source: {activeFact.sourceReference}</p>
+            <p style={{ ...s.hintText, marginTop: 8 }}>{t('myarea_fact_source', lang)} {activeFact.sourceReference}</p>
           </div>
         )
       })()}

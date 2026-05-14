@@ -17,6 +17,7 @@ import {
   SCAVENGER_CHECKLIST, MINDFULNESS_STEPS, LANGUAGE_PHRASES,
   HISTORY_MYSTERY, STORY_PROMPTS, TEACH_TOPICS,
 } from '../data/parentActivitiesData'
+import { t } from '../utils/i18n'
 
 const QUIZ_MAP = {
   spelling_bee:      SPELLING_BEE_QUESTIONS,
@@ -25,7 +26,7 @@ const QUIZ_MAP = {
 }
 
 // ── Tier banner ────────────────────────────────────────────────
-function TierBanner({ stats }) {
+function TierBanner({ stats, lang = 'en' }) {
   const tierIndex = getParentTier()
   const tier = PARENT_TIERS[tierIndex]
   const nextTier = PARENT_TIERS[Math.min(tierIndex + 1, 4)]
@@ -53,14 +54,14 @@ function TierBanner({ stats }) {
             <div style={st.tierHint}>{nextTier.requirement}</div>
           </>
         )}
-        {tierIndex === 4 && <div style={{ ...st.tierNextLabel, color: '#6B3FA0' }}>Maximum tier reached! 👑</div>}
+        {tierIndex === 4 && <div style={{ ...st.tierNextLabel, color: '#6B3FA0' }}>{t('parent_act_tier_max', lang)}</div>}
       </div>
     </div>
   )
 }
 
 // ── Quiz modal ─────────────────────────────────────────────────
-function QuizModal({ activity, questions, onClose, onComplete }) {
+function QuizModal({ activity, questions, onClose, onComplete, lang = 'en' }) {
   const [current, setCurrent] = useState(0)
   const [selected, setSelected] = useState(null)
   const [score, setScore] = useState(0)
@@ -115,10 +116,10 @@ function QuizModal({ activity, questions, onClose, onComplete }) {
             {selected && (
               <div style={{ textAlign: 'center', marginTop: '12px' }}>
                 <div style={{ marginBottom: '8px', fontWeight: 700, color: selected === q.answer ? 'var(--mint)' : 'var(--coral)' }}>
-                  {selected === q.answer ? 'Correct!' : `The answer is: ${q.answer}`}
+                  {selected === q.answer ? t('quiz_modal_correct', lang) : `The answer is: ${q.answer}`}
                 </div>
                 <button onClick={handleNext} style={st.nextBtn}>
-                  {current + 1 >= total ? 'See Results' : 'Next Question'}
+                  {current + 1 >= total ? t('quiz_modal_see_results', lang) : t('quiz_modal_next', lang)}
                 </button>
               </div>
             )}
@@ -127,10 +128,10 @@ function QuizModal({ activity, questions, onClose, onComplete }) {
           <div style={st.resultsBox}>
             <div style={st.resultScore}>{score}/{total}</div>
             <div style={st.resultLabel}>
-              {score === total ? 'Perfect score! Outstanding!' : score >= total * 0.7 ? 'Great work!' : 'Good effort — keep practising!'}
+              {score === total ? t('quiz_modal_perfect', lang) : score >= total * 0.7 ? t('quiz_modal_great', lang) : t('quiz_modal_keep_trying', lang)}
             </div>
             {activity.reward?.pct > 0 && <div style={st.rewardPill}>You earned {activity.reward.label}!</div>}
-            <button onClick={() => { onComplete(score, total); onClose() }} style={st.nextBtn}>Claim Reward &amp; Close</button>
+            <button onClick={() => { onComplete(score, total); onClose() }} style={st.nextBtn}>{t('quiz_modal_claim', lang)}</button>
           </div>
         )}
       </div>
@@ -139,7 +140,7 @@ function QuizModal({ activity, questions, onClose, onComplete }) {
 }
 
 // ── Article modal (Reading Tip) ───────────────────────────────
-function ArticleModal({ activity, onClose, onComplete }) {
+function ArticleModal({ activity, onClose, onComplete, lang = 'en' }) {
   const [stage, setStage] = useState('read')
   const [current, setCurrent] = useState(0)
   const [selected, setSelected] = useState(null)
@@ -173,7 +174,7 @@ function ArticleModal({ activity, onClose, onComplete }) {
             {READING_TIP_ARTICLE.body.map((para, i) => (
               <p key={i} style={{ fontSize: '0.9rem', lineHeight: 1.7, color: 'var(--text-dark)', marginBottom: '12px' }}>{para}</p>
             ))}
-            <button onClick={() => setStage('quiz')} style={st.nextBtn}>Take the Quiz →</button>
+            <button onClick={() => setStage('quiz')} style={st.nextBtn}>{t('article_modal_quiz_button', lang)}</button>
           </>
         )}
 
@@ -202,9 +203,9 @@ function ArticleModal({ activity, onClose, onComplete }) {
         {stage === 'done' && (
           <div style={st.resultsBox}>
             <div style={st.resultScore}>{score}/{qs.length}</div>
-            <div style={st.resultLabel}>Reading tip complete!</div>
-            <div style={st.rewardPill}>Badge unlocked: Reading Champion</div>
-            <button onClick={() => { onComplete(score, qs.length); onClose() }} style={st.nextBtn}>Claim Badge &amp; Close</button>
+            <div style={st.resultLabel}>{t('article_modal_result', lang)}</div>
+            <div style={st.rewardPill}>{t('article_modal_badge_unlocked', lang)}</div>
+            <button onClick={() => { onComplete(score, qs.length); onClose() }} style={st.nextBtn}>{t('article_modal_claim', lang)}</button>
           </div>
         )}
       </div>
@@ -213,7 +214,7 @@ function ArticleModal({ activity, onClose, onComplete }) {
 }
 
 // ── Flashcard builder modal ────────────────────────────────────
-function FlashcardModal({ activity, onClose, onComplete }) {
+function FlashcardModal({ activity, onClose, onComplete, lang = 'en' }) {
   const [selectedTopic, setSelectedTopic] = useState(null)
   const [front, setFront] = useState('')
   const [back, setBack] = useState('')
@@ -243,37 +244,37 @@ function FlashcardModal({ activity, onClose, onComplete }) {
         </div>
 
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
-          <button onClick={() => setSelectedTopic(null)} style={{ ...st.chip, background: !selectedTopic ? 'var(--plum)' : '#f0ebfa', color: !selectedTopic ? '#fff' : 'var(--violet)' }}>All</button>
+          <button onClick={() => setSelectedTopic(null)} style={{ ...st.chip, background: !selectedTopic ? 'var(--plum)' : '#f0ebfa', color: !selectedTopic ? '#fff' : 'var(--violet)' }}>{t('flashcard_all_button', lang)}</button>
           {FLASHCARD_TOPICS.map((t) => (
             <button key={t.id} onClick={() => setSelectedTopic(t.id)} style={{ ...st.chip, background: selectedTopic === t.id ? 'var(--plum)' : '#f0ebfa', color: selectedTopic === t.id ? '#fff' : 'var(--violet)' }}>{t.label}</button>
           ))}
         </div>
 
         <div style={st.flashcardInputRow}>
-          <input value={front} onChange={(e) => setFront(e.target.value)} placeholder="Front (question)" style={st.flashInput} />
-          <input value={back} onChange={(e) => setBack(e.target.value)} placeholder="Back (answer)" style={st.flashInput} />
-          <button onClick={handleAdd} disabled={!front.trim() || !back.trim() || !selectedTopic} style={{ ...st.nextBtn, padding: '10px 18px', margin: 0 }}>+ Add</button>
+          <input value={front} onChange={(e) => setFront(e.target.value)} placeholder={t('flashcard_front_placeholder', lang)} style={st.flashInput} />
+          <input value={back} onChange={(e) => setBack(e.target.value)} placeholder={t('flashcard_back_placeholder', lang)} style={st.flashInput} />
+          <button onClick={handleAdd} disabled={!front.trim() || !back.trim() || !selectedTopic} style={{ ...st.nextBtn, padding: '10px 18px', margin: 0 }}>{t('flashcard_add', lang)}</button>
         </div>
-        {!selectedTopic && <p style={{ fontSize: '0.78rem', color: 'var(--text-mid)', marginBottom: '8px' }}>Select a topic above to add cards.</p>}
+        {!selectedTopic && <p style={{ fontSize: '0.78rem', color: 'var(--text-mid)', marginBottom: '8px' }}>{t('flashcard_topic_hint', lang)}</p>}
 
         <div style={st.cardGrid}>
           {selectedTopic && FLASHCARD_TOPICS.find((t) => t.id === selectedTopic)?.cards.map((card, i) => (
             <div key={i} style={st.flashcard} onClick={() => setFlipped((f) => ({ ...f, [`pre_${i}`]: !f[`pre_${i}`] }))}>
               <span style={st.flashCardText}>{flipped[`pre_${i}`] ? card.split('→')[1]?.trim() ?? card : card.split('→')[0]?.trim() ?? card}</span>
-              <span style={st.flashCardHint}>tap to flip</span>
+              <span style={st.flashCardHint}>{t('flashcard_tap_hint', lang)}</span>
             </div>
           ))}
           {topicCards.map((card) => (
             <div key={card.id} style={st.flashcard} onClick={() => setFlipped((f) => ({ ...f, [card.id]: !f[card.id] }))}>
               <span style={st.flashCardText}>{flipped[card.id] ? card.back : card.front}</span>
-              <span style={st.flashCardHint}>tap to flip</span>
+              <span style={st.flashCardHint}>{t('flashcard_tap_hint', lang)}</span>
               <button onClick={(e) => { e.stopPropagation(); handleDelete(card.id) }} style={st.flashDeleteBtn}>✕</button>
             </div>
           ))}
         </div>
 
         <div style={{ textAlign: 'center', marginTop: '16px' }}>
-          <button onClick={() => { onComplete(0, 0); onClose() }} style={st.nextBtn}>Done — Mark as Complete</button>
+          <button onClick={() => { onComplete(0, 0); onClose() }} style={st.nextBtn}>{t('flashcard_done', lang)}</button>
         </div>
       </div>
     </div>
@@ -281,7 +282,7 @@ function FlashcardModal({ activity, onClose, onComplete }) {
 }
 
 // ── Confirm modal (Module B joint + Module C/D confirm-type) ──
-function ConfirmModal({ activity, onClose, onComplete, module }) {
+function ConfirmModal({ activity, onClose, onComplete, module, lang = 'en' }) {
   const [parentDone, setParentDone] = useState(false)
   const [childDone, setChildDone] = useState(false)
   const isJoint = !!activity.childEarns
@@ -300,7 +301,7 @@ function ConfirmModal({ activity, onClose, onComplete, module }) {
         <p style={{ fontSize: '0.9rem', color: 'var(--text-dark)', lineHeight: 1.6, marginBottom: '20px' }}>{activity.description}</p>
 
         {isLifeSkill && activity.freq && (
-          <div style={st.freqBadge}>Target frequency: {activity.freq}</div>
+          <div style={st.freqBadge}>{t('confirm_modal_freq', lang)} {activity.freq}</div>
         )}
 
         <div style={st.jointChecks}>
@@ -325,7 +326,7 @@ function ConfirmModal({ activity, onClose, onComplete, module }) {
             disabled={!canConfirm}
             style={{ ...st.nextBtn, opacity: canConfirm ? 1 : 0.4 }}
           >
-            Mark Complete &amp; Claim Reward
+            {t('confirm_modal_submit', lang)}
           </button>
         </div>
       </div>
@@ -335,7 +336,7 @@ function ConfirmModal({ activity, onClose, onComplete, module }) {
 
 // ── Module D specialist modals ─────────────────────────────────
 
-function StepsModal({ activity, onClose, onComplete }) {
+function StepsModal({ activity, onClose, onComplete, lang = 'en' }) {
   const [steps, setSteps] = useState('')
   const [confirmed, setConfirmed] = useState(false)
   const target = 10000
@@ -350,14 +351,14 @@ function StepsModal({ activity, onClose, onComplete }) {
         </div>
         <p style={st.modalBody}>{activity.description}</p>
         <div style={st.inputGroup}>
-          <label style={st.inputLabel}>Enter your family step count today:</label>
+          <label style={st.inputLabel}>{t('steps_modal_label', lang)}</label>
           <input
             type="number" value={steps} onChange={(e) => setSteps(e.target.value)}
-            placeholder="e.g. 10500"
+            placeholder={t('steps_modal_placeholder', lang)}
             style={{ ...st.flashInput, width: '100%' }}
           />
           {steps && <div style={{ marginTop: '8px', fontWeight: 700, color: reached ? 'var(--mint)' : 'var(--coral)', fontSize: '0.85rem' }}>
-            {reached ? 'Goal reached! Well done!' : `${(target - parseInt(steps, 10)).toLocaleString()} steps to go`}
+            {reached ? t('steps_modal_goal_reached', lang) : `${(target - parseInt(steps, 10)).toLocaleString()} ${t('steps_modal_steps_to_go', lang)}`}
           </div>}
         </div>
         <label style={{ ...st.checkRow, marginTop: '16px' }}>
@@ -376,7 +377,7 @@ function StepsModal({ activity, onClose, onComplete }) {
   )
 }
 
-function ChecklistModal({ activity, onClose, onComplete }) {
+function ChecklistModal({ activity, onClose, onComplete, lang = 'en' }) {
   const [ticked, setTicked] = useState({})
 
   function toggle(item) {
@@ -410,7 +411,7 @@ function ChecklistModal({ activity, onClose, onComplete }) {
         <div style={{ textAlign: 'center', marginTop: '16px' }}>
           <button onClick={() => { onComplete(tickedCount, SCAVENGER_CHECKLIST.length); onClose() }} disabled={tickedCount < 4}
             style={{ ...st.nextBtn, opacity: tickedCount >= 4 ? 1 : 0.4 }}>
-            {allDone ? 'Complete Hunt! Claim Reward' : tickedCount >= 4 ? 'Good effort — Mark Complete' : `Find at least 4 items to complete`}
+            {allDone ? t('checklist_modal_complete', lang) : tickedCount >= 4 ? t('checklist_modal_good_effort', lang) : t('checklist_modal_find_more', lang)}
           </button>
         </div>
       </div>
@@ -418,7 +419,7 @@ function ChecklistModal({ activity, onClose, onComplete }) {
   )
 }
 
-function GuidedModal({ activity, onClose, onComplete }) {
+function GuidedModal({ activity, onClose, onComplete, lang = 'en' }) {
   const [stepIndex, setStepIndex] = useState(0)
   const [done, setDone] = useState(false)
 
@@ -447,14 +448,14 @@ function GuidedModal({ activity, onClose, onComplete }) {
             </div>
             <div style={{ textAlign: 'center', marginTop: '20px' }}>
               <button onClick={advance} style={st.nextBtn}>
-                {stepIndex + 1 >= MINDFULNESS_STEPS.length ? 'All done' : 'Next Step'}
+                {stepIndex + 1 >= MINDFULNESS_STEPS.length ? t('guided_modal_all_done', lang) : t('guided_modal_next', lang)}
               </button>
             </div>
           </>
         ) : (
           <div style={st.resultsBox}>
             <div style={{ fontSize: '3rem', marginBottom: '8px' }}>🧘</div>
-            <div style={st.resultLabel}>Mindfulness complete! Well done.</div>
+            <div style={st.resultLabel}>{t('guided_modal_result', lang)}</div>
             <div style={st.rewardPill}>Child earns {activity.childEarns} stars &bull; You earn: {activity.parentReward}</div>
             <button onClick={() => { onComplete(1, 1); onClose() }} style={st.nextBtn}>Claim Reward &amp; Close</button>
           </div>
@@ -464,7 +465,7 @@ function GuidedModal({ activity, onClose, onComplete }) {
   )
 }
 
-function TextModal({ activity, onClose, onComplete }) {
+function TextModal({ activity, onClose, onComplete, lang = 'en' }) {
   const [text, setText] = useState('')
   const [confirmed, setConfirmed] = useState(false)
 
@@ -484,7 +485,7 @@ function TextModal({ activity, onClose, onComplete }) {
           <label style={st.inputLabel}>{label}</label>
           <textarea
             value={text} onChange={(e) => setText(e.target.value)}
-            placeholder="Write a sentence or two..."
+            placeholder={t('text_modal_placeholder', lang)}
             rows={4}
             style={{ ...st.flashInput, width: '100%', resize: 'vertical' }}
           />
@@ -505,7 +506,7 @@ function TextModal({ activity, onClose, onComplete }) {
   )
 }
 
-function StoryModal({ activity, onClose, onComplete }) {
+function StoryModal({ activity, onClose, onComplete, lang = 'en' }) {
   const [answers, setAnswers] = useState(Array(STORY_PROMPTS.length).fill(''))
   const [confirmed, setConfirmed] = useState(false)
 
@@ -546,7 +547,7 @@ function StoryModal({ activity, onClose, onComplete }) {
         <div style={{ textAlign: 'center', marginTop: '16px' }}>
           <button onClick={() => { onComplete(1, 1); onClose() }} disabled={!allFilled || !confirmed}
             style={{ ...st.nextBtn, opacity: allFilled && confirmed ? 1 : 0.4 }}>
-            Save Story &amp; Claim Reward
+            {t('story_modal_submit', lang)}
           </button>
         </div>
       </div>
@@ -554,7 +555,7 @@ function StoryModal({ activity, onClose, onComplete }) {
   )
 }
 
-function RatingModal({ activity, onClose, onComplete }) {
+function RatingModal({ activity, onClose, onComplete, lang = 'en' }) {
   const [topic, setTopic] = useState('')
   const [rating, setRating] = useState(0)
   const [confirmed, setConfirmed] = useState(false)
@@ -579,7 +580,7 @@ function RatingModal({ activity, onClose, onComplete }) {
           </div>
         </div>
         <div style={{ marginTop: '16px' }}>
-          <div style={st.inputLabel}>Rate their explanation (1 = good start, 5 = amazing!):</div>
+          <div style={st.inputLabel}>{t('rating_modal_rate_label', lang)}</div>
           <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
             {[1, 2, 3, 4, 5].map((n) => (
               <button key={n} onClick={() => setRating(n)}
@@ -605,7 +606,7 @@ function RatingModal({ activity, onClose, onComplete }) {
   )
 }
 
-function PhrasesModal({ activity, onClose, onComplete }) {
+function PhrasesModal({ activity, onClose, onComplete, lang = 'en' }) {
   const [practised, setPractised] = useState({})
   const [confirmed, setConfirmed] = useState(false)
 
@@ -634,7 +635,7 @@ function PhrasesModal({ activity, onClose, onComplete }) {
               </div>
               <button onClick={() => setPractised((prev) => ({ ...prev, [p.phrase]: !prev[p.phrase] }))}
                 style={{ ...st.chip, background: practised[p.phrase] ? 'var(--mint)' : 'var(--violet)', color: '#fff', minWidth: '80px' }}>
-                {practised[p.phrase] ? 'Practised ✓' : 'Practise'}
+                {practised[p.phrase] ? t('phrases_modal_practised', lang) : t('phrases_modal_practise', lang)}
               </button>
             </div>
           </div>
@@ -655,7 +656,7 @@ function PhrasesModal({ activity, onClose, onComplete }) {
   )
 }
 
-function MysteryModal({ activity, onClose, onComplete }) {
+function MysteryModal({ activity, onClose, onComplete, lang = 'en' }) {
   const [clueIndex, setClueIndex] = useState(0)
   const [revealed, setRevealed] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
@@ -670,11 +671,11 @@ function MysteryModal({ activity, onClose, onComplete }) {
         <div style={st.progressBar}>
           <div style={{ ...st.progressFill, width: `${((clueIndex + 1) / HISTORY_MYSTERY.clues.length) * 100}%` }} />
         </div>
-        <p style={{ fontSize: '0.78rem', color: 'var(--text-mid)', marginBottom: '12px' }}>Clue {clueIndex + 1} of {HISTORY_MYSTERY.clues.length}</p>
+        <p style={{ fontSize: '0.78rem', color: 'var(--text-mid)', marginBottom: '12px' }}>{t('mystery_modal_clue_label', lang)} {clueIndex + 1} of {HISTORY_MYSTERY.clues.length}</p>
 
         {HISTORY_MYSTERY.clues.slice(0, clueIndex + 1).map((clue, i) => (
           <div key={i} style={{ ...st.clueCard, opacity: i < clueIndex ? 0.7 : 1 }}>
-            <span style={{ fontWeight: 700, color: 'var(--violet)', marginRight: '6px' }}>Clue {i + 1}:</span>
+            <span style={{ fontWeight: 700, color: 'var(--violet)', marginRight: '6px' }}>{t('mystery_modal_clue_label', lang)} {i + 1}:</span>
             {clue}
           </div>
         ))}
@@ -686,7 +687,7 @@ function MysteryModal({ activity, onClose, onComplete }) {
         {clueIndex === HISTORY_MYSTERY.clues.length - 1 && !revealed && (
           <div style={{ marginTop: '16px' }}>
             <p style={{ fontWeight: 700, color: 'var(--plum)', marginBottom: '8px' }}>{HISTORY_MYSTERY.question}</p>
-            <button onClick={() => setRevealed(true)} style={{ ...st.nextBtn, background: 'var(--gold)', color: '#1A0A2E' }}>Reveal the Answer!</button>
+            <button onClick={() => setRevealed(true)} style={{ ...st.nextBtn, background: 'var(--gold)', color: '#1A0A2E' }}>{t('mystery_modal_reveal', lang)}</button>
           </div>
         )}
 
@@ -694,7 +695,7 @@ function MysteryModal({ activity, onClose, onComplete }) {
           <div style={st.answerBox}>
             <div style={{ fontWeight: 800, fontSize: '1.2rem', color: 'var(--plum)', marginBottom: '8px' }}>{HISTORY_MYSTERY.answer}</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--text-dark)', lineHeight: 1.6 }}>
-              <strong>Fun fact:</strong> {HISTORY_MYSTERY.funFact}
+              <strong>{t('mystery_modal_fun_fact', lang)}</strong> {HISTORY_MYSTERY.funFact}
             </div>
             <label style={{ ...st.checkRow, marginTop: '12px' }}>
               <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} style={{ width: '20px', height: '20px' }} />
@@ -715,7 +716,7 @@ function MysteryModal({ activity, onClose, onComplete }) {
 }
 
 // ── Voucher wallet ─────────────────────────────────────────────
-function VoucherWallet({ vouchers }) {
+function VoucherWallet({ vouchers, lang = 'en' }) {
   const [copied, setCopied] = useState(null)
 
   function copyCode(voucher) {
@@ -728,22 +729,20 @@ function VoucherWallet({ vouchers }) {
 
   return (
     <div style={st.walletSection}>
-      <h3 style={st.sectionTitle}>Your Discount Vouchers ({vouchers.length} active)</h3>
-      <p style={st.walletNote}>
-        Copy your code and contact us at <strong>hello@myamazinglearner.co.uk</strong> to redeem your discount. Vouchers expire 30 days after issue.
-      </p>
+      <h3 style={st.sectionTitle}>{t('wallet_title', lang)} ({vouchers.length} active)</h3>
+      <p style={st.walletNote}>{t('wallet_note', lang)}</p>
       <div style={st.voucherGrid}>
         {vouchers.map((v) => {
           const expiresIn = Math.ceil((new Date(v.expires_at || v.expiresAt) - new Date()) / 86400000)
           return (
             <div key={v.id} style={st.voucherCard}>
-              <div style={st.voucherPct}>{v.pct}% off</div>
+              <div style={st.voucherPct}>{v.pct}{t('wallet_off', lang)}</div>
               <div style={st.voucherCode}>{v.code}</div>
               <div style={st.voucherExpiry}>Expires in {expiresIn} day{expiresIn !== 1 ? 's' : ''}</div>
               <button onClick={() => copyCode(v)} style={st.voucherBtn}>
-                {copied === v.id ? 'Copied!' : 'Copy Code'}
+                {copied === v.id ? t('wallet_copied', lang) : t('wallet_copy', lang)}
               </button>
-              <div style={st.redeemNote}>Email hello@myamazinglearner.co.uk to redeem</div>
+              <div style={st.redeemNote}>{t('wallet_redeem_note', lang)}</div>
             </div>
           )
         })}
@@ -753,7 +752,7 @@ function VoucherWallet({ vouchers }) {
 }
 
 // ── Cap meter ──────────────────────────────────────────────────
-function CapMeter() {
+function CapMeter({ lang = 'en' }) {
   const cap = getMonthlyCapState()
   return (
     <div style={st.capMeter}>
@@ -769,13 +768,13 @@ function CapMeter() {
           <div style={{ ...st.capFill, width: `${Math.min((cap.combinedTotal / 40) * 100, 100)}%`, background: cap.combinedTotal >= 40 ? 'var(--coral)' : 'var(--violet)' }} />
         </div>
       </div>
-      <p style={st.capNote}>Caps reset on the 1st of each month. Modules C and D are not subject to the discount cap.</p>
+      <p style={st.capNote}>{t('cap_note', lang)}</p>
     </div>
   )
 }
 
 // ── Activity card ──────────────────────────────────────────────
-function ActivityCard({ activity, module, onOpen, doneToday, jointSession }) {
+function ActivityCard({ activity, module, onOpen, doneToday, jointSession, lang = 'en' }) {
   const isJoint = module === 'B' || !!activity.childEarns
   const bothComplete = jointSession?.status === 'complete'
   const done = doneToday || bothComplete
@@ -796,11 +795,11 @@ function ActivityCard({ activity, module, onOpen, doneToday, jointSession }) {
       <div style={st.actCardTop}>
         <span style={st.actEmoji}>{activity.emoji}</span>
         <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-          {done && <span style={st.donePill}>Done ✓</span>}
+          {done && <span style={st.donePill}>{t('activity_done_pill', lang)}</span>}
           {activity.category && <span style={st.categoryPill}>{activity.category}</span>}
           {isJoint && !done && jointSession && (
             <span style={{ ...st.donePill, background: '#FFB347', color: '#000' }}>
-              {jointSession.parentDone && !jointSession.childDone ? 'Awaiting child' : 'In progress'}
+              {jointSession.parentDone && !jointSession.childDone ? t('activity_awaiting', lang) : t('activity_in_progress', lang)}
             </span>
           )}
         </div>
@@ -832,13 +831,12 @@ const HELP_TIPS = {
   general: 'Exploring the world through books, maps, or documentaries boosts general knowledge fast.',
 }
 
-function ChildQuizSnapshot({ childName }) {
+function ChildQuizSnapshot({ childName, lang = 'en' }) {
   const subjectProgress = getSubjectProgress()
   const totalCorrect    = getCorrectCount()
   const stars           = getStars()
   const streak          = getStreak()
   const levelsCompleted = getLevelsCompleted()
-  const name            = childName || 'your learner'
   const hasActivity     = totalCorrect > 0 || stars > 0
 
   const quizSubjects = SUBJECTS.filter((s) => s.id !== 'all')
@@ -854,21 +852,18 @@ function ChildQuizSnapshot({ childName }) {
       <div style={snap.header}>
         <span style={snap.headerIcon} aria-hidden="true">📊</span>
         <h3 style={snap.title}>
-          {childName ? `${childName}'s Quiz Activity` : "Your Learner's Quiz Activity"}
+          {t('snapshot_title', lang)}
         </h3>
       </div>
 
       {!hasActivity ? (
         <div style={snap.zeroState}>
           <span style={snap.zeroRocket} aria-hidden="true">🚀</span>
-          <p style={snap.zeroHead}>No quiz activity yet!</p>
-          <p style={snap.zeroSub}>
-            Switch to <strong>Child mode</strong> using the toggle at the top, then hand the
-            device to {name}. Their results will appear here as they learn.
-          </p>
+          <p style={snap.zeroHead}>{t('snapshot_zero_heading', lang)}</p>
+          <p style={snap.zeroSub}>{t('snapshot_zero_sub', lang)}</p>
           <div style={snap.zeroHint}>
             <span style={snap.zeroHintDot} aria-hidden="true" />
-            Use the <strong>Parent / Child</strong> pill in the header to switch
+            {t('snapshot_zero_hint', lang)}
           </div>
         </div>
       ) : (
@@ -888,13 +883,13 @@ function ChildQuizSnapshot({ childName }) {
           </div>
 
           <div style={snap.section}>
-            <p style={snap.sectionLabel}>By subject</p>
+            <p style={snap.sectionLabel}>{t('snapshot_by_subject', lang)}</p>
             {quizSubjects.map((s) => {
               const count = subjectProgress[s.id] ?? 0
               const pct   = Math.round((count / maxCount) * 100)
               return (
                 <div key={s.id} style={snap.barRow}>
-                  <span style={snap.barSubject}>{s.emoji} {s.label}</span>
+                  <span style={snap.barSubject}>{s.emoji} {t(`quiz_subject_${s.id.toLowerCase()}`, lang)}</span>
                   <div style={snap.barTrack}>
                     <div style={{ ...snap.barFill, width: `${pct}%` }} />
                   </div>
@@ -905,7 +900,7 @@ function ChildQuizSnapshot({ childName }) {
           </div>
 
           <div style={snap.section}>
-            <p style={snap.sectionLabel}>Levels explored</p>
+            <p style={snap.sectionLabel}>{t('snapshot_levels_explored', lang)}</p>
             <div style={snap.levelsRow}>
               {LEVELS.map((l) => {
                 const done = levelsCompleted.includes(l.id)
@@ -918,7 +913,7 @@ function ChildQuizSnapshot({ childName }) {
                       color: done ? '#fff' : 'var(--text-mid)',
                     }}
                   >
-                    {l.emoji} {l.label}{done ? ' ✓' : ''}
+                    {l.emoji} {t(`quiz_level_${l.id}`, lang)}{done ? ' ✓' : ''}
                   </div>
                 )
               })}
@@ -1042,7 +1037,7 @@ const snap = {
 }
 
 // ── Main panel ─────────────────────────────────────────────────
-export default function ParentActivitiesPanel({ childName }) {
+export default function ParentActivitiesPanel({ childName, lang = 'en' }) {
   const [activeModule, setActiveModule] = useState('A')
   const [activeModal, setActiveModal] = useState(null)
   const [completions, setCompletions] = useState(() => getParentCompletions())
@@ -1114,10 +1109,10 @@ export default function ParentActivitiesPanel({ childName }) {
   }
 
   const MODULES = [
-    { id: 'A', label: 'Solo Activities', emoji: '👤', count: MODULE_A.length },
-    { id: 'B', label: 'Do It Together', emoji: '👨‍👧', count: MODULE_B.length },
-    { id: 'C', label: 'Life Skills', emoji: '🌟', count: MODULE_C.length },
-    { id: 'D', label: 'Extended Bank', emoji: '🌈', count: MODULE_D.length },
+    { id: 'A', labelKey: 'module_a_label', emoji: '👤', count: MODULE_A.length },
+    { id: 'B', labelKey: 'module_b_label', emoji: '👨‍👧', count: MODULE_B.length },
+    { id: 'C', labelKey: 'module_c_label', emoji: '🌟', count: MODULE_C.length },
+    { id: 'D', labelKey: 'module_d_label', emoji: '🌈', count: MODULE_D.length },
   ]
 
   const activeActivities =
@@ -1131,16 +1126,15 @@ export default function ParentActivitiesPanel({ childName }) {
 
       <div style={st.header}>
         <h2 style={st.title}>
-          Parent Activity Hub{childName ? ` — supporting ${childName}` : ''}
+          {t('parent_act_title', lang)}{childName ? ` - supporting ${childName}` : ''}
         </h2>
         <p style={st.subtitle}>
-          Complete activities to earn discount vouchers, unlock badges, and strengthen your child&apos;s learning.
-          Solo and joint activity discounts are capped at 30% and 40% per month respectively.
+          {t('parent_act_subtitle', lang)}
         </p>
       </div>
 
-      <TierBanner stats={stats} />
-      <ChildQuizSnapshot childName={childName} />
+      <TierBanner lang={lang} stats={stats} />
+      <ChildQuizSnapshot lang={lang} childName={childName} />
 
       {/* Cap message */}
       {capMsg && (
@@ -1166,7 +1160,7 @@ export default function ParentActivitiesPanel({ childName }) {
             }}
           >
             <span>{m.emoji}</span>
-            <span style={st.moduleTabLabel}>{m.label}</span>
+            <span style={st.moduleTabLabel}>{t(m.labelKey, lang)}</span>
             <span style={{ ...st.moduleCount, background: activeModule === m.id ? 'rgba(255,255,255,0.2)' : 'rgba(107,63,160,0.1)' }}>{m.count}</span>
           </button>
         ))}
@@ -1190,12 +1184,13 @@ export default function ParentActivitiesPanel({ childName }) {
             onOpen={(a) => openModal(a, activeModule)}
             doneToday={activeModule === 'C' ? false : hasCompletedActivityToday(activity.id)}
             jointSession={jointSessions[activity.id]}
+            lang={lang}
           />
         ))}
       </div>
 
-      <VoucherWallet vouchers={vouchers} />
-      <CapMeter />
+      <VoucherWallet lang={lang} vouchers={vouchers} />
+      <CapMeter lang={lang} />
 
       {/* Modals */}
       {activeModal && (() => {
@@ -1204,25 +1199,25 @@ export default function ParentActivitiesPanel({ childName }) {
         const complete = (score, total) => handleActivityComplete(activity, module, score, total)
 
         if (QUIZ_MAP[activity.id]) {
-          return <QuizModal activity={activity} questions={QUIZ_MAP[activity.id]} onClose={close} onComplete={complete} />
+          return <QuizModal lang={lang} activity={activity} questions={QUIZ_MAP[activity.id]} onClose={close} onComplete={complete} />
         }
         if (activity.type === 'article') {
-          return <ArticleModal activity={activity} onClose={close} onComplete={complete} />
+          return <ArticleModal lang={lang} activity={activity} onClose={close} onComplete={complete} />
         }
         if (activity.type === 'tool') {
-          return <FlashcardModal activity={activity} onClose={close} onComplete={complete} />
+          return <FlashcardModal lang={lang} activity={activity} onClose={close} onComplete={complete} />
         }
         // Module D types
-        if (activity.type === 'steps')     return <StepsModal activity={activity} onClose={close} onComplete={complete} />
-        if (activity.type === 'checklist') return <ChecklistModal activity={activity} onClose={close} onComplete={complete} />
-        if (activity.type === 'guided')    return <GuidedModal activity={activity} onClose={close} onComplete={complete} />
-        if (activity.type === 'text')      return <TextModal activity={activity} onClose={close} onComplete={complete} />
-        if (activity.type === 'story')     return <StoryModal activity={activity} onClose={close} onComplete={complete} />
-        if (activity.type === 'rating')    return <RatingModal activity={activity} onClose={close} onComplete={complete} />
-        if (activity.type === 'phrases')   return <PhrasesModal activity={activity} onClose={close} onComplete={complete} />
-        if (activity.type === 'mystery')   return <MysteryModal activity={activity} onClose={close} onComplete={complete} />
+        if (activity.type === 'steps')     return <StepsModal lang={lang} activity={activity} onClose={close} onComplete={complete} />
+        if (activity.type === 'checklist') return <ChecklistModal lang={lang} activity={activity} onClose={close} onComplete={complete} />
+        if (activity.type === 'guided')    return <GuidedModal lang={lang} activity={activity} onClose={close} onComplete={complete} />
+        if (activity.type === 'text')      return <TextModal lang={lang} activity={activity} onClose={close} onComplete={complete} />
+        if (activity.type === 'story')     return <StoryModal lang={lang} activity={activity} onClose={close} onComplete={complete} />
+        if (activity.type === 'rating')    return <RatingModal lang={lang} activity={activity} onClose={close} onComplete={complete} />
+        if (activity.type === 'phrases')   return <PhrasesModal lang={lang} activity={activity} onClose={close} onComplete={complete} />
+        if (activity.type === 'mystery')   return <MysteryModal lang={lang} activity={activity} onClose={close} onComplete={complete} />
 
-        return <ConfirmModal activity={activity} onClose={close} onComplete={complete} module={module} />
+        return <ConfirmModal lang={lang} activity={activity} onClose={close} onComplete={complete} module={module} />
       })()}
     </div>
   )

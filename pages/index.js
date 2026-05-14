@@ -140,7 +140,7 @@ export default function App() {
       </div>
 
       {/* Name modal — first visit */}
-      {showNameModal && <NameModal onSave={handleNameSave} />}
+      {showNameModal && <NameModal lang={lang} onSave={handleNameSave} />}
 
       <div className="no-print">
         <Header
@@ -160,7 +160,7 @@ export default function App() {
         </div>
       </main>
 
-      <FloatingSENButton activeTab={activeTab} onTabChange={handleTabChange} />
+      <FloatingSENButton lang={lang} activeTab={activeTab} onTabChange={handleTabChange} />
     </>
   )
 }

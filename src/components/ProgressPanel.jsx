@@ -3,45 +3,59 @@ import { PROGRESS_AREAS } from '../data/progressData'
 import { BADGES } from '../data/badgesData'
 import { CRAFTS } from '../data/craftsData'
 import { getMoodHistory, getStars, getBadges, getCraftsCompleted, getStreak, getSubjectProgress } from '../utils/storage'
+import { t } from '../utils/i18n'
 
 // Mood emoji map (index 1–5)
 const MOODS = ['', '😔', '😕', '😐', '🙂', '😄']
 
-// Enhancement B1 — dynamic strength headline (no AI call, pure conditional logic)
-const STRENGTH_HEADLINES = {
-  reading:   (name) => `${name} is a Reading Champion! 📚`,
-  numeracy:  (name) => `${name} is a Maths Whiz! 🔢`,
-  writing:   (name) => `${name} is a Writing Star! ✏️`,
-  wellbeing: (name) => `${name} loves Wellbeing! 💛`,
-  creative:  (name) => `${name} is a Creative Star! 🎨`,
-  science:   (name) => `${name} is a Science Explorer! 🔭`,
+const STRENGTH_KEYS = {
+  reading: 'progress_strength_reading',
+  numeracy: 'progress_strength_maths',
+  writing: 'progress_strength_writing',
+  wellbeing: 'progress_strength_wellbeing',
+  creative: 'progress_strength_creative',
+  science: 'progress_strength_science',
 }
 
-function getStrengthHeadline(name, areas) {
+const CRAFT_KEY_MAP = {
+  1: 'pompom',
+  2: 'velcro',
+  3: 'tracing',
+  4: 'namewriting',
+  5: 'sentence',
+  6: 'timestable',
+}
+
+const BADGE_KEY_MAP = {
+  explorer_full: 'full_explorer',
+}
+
+function getStrengthHeadline(name, areas, lang) {
   const strongest = [...areas].sort((a, b) => b.pct - a.pct)[0]
-  const fn = STRENGTH_HEADLINES[strongest.id]
-  return fn ? fn(name) : `${name} is an Amazing Learner! 🌟`
+  const key = STRENGTH_KEYS[strongest.id] || 'progress_strength_default'
+  return `${name} ${t(key, lang)}`
 }
 
 // Enhancement B2 — Sparky pre-written messages (condition-based, no AI call)
-function getSparkyMessage(name, badgeCount, streak) {
+function getSparkyMessage(name, badgeCount, streak, lang) {
   let msg
   if (badgeCount <= 2) {
-    msg = `You've made an amazing start, ${name}! Every expert was once a beginner. Keep going! — Sparky ⭐`
+    msg = t('sparky_msg_early', lang)
   } else if (badgeCount <= 5) {
-    msg = `Look at all those badges, ${name}! You're becoming a true Amazing Learner. I'm so proud of you! — Sparky ⭐⭐`
+    msg = t('sparky_msg_mid', lang)
   } else if (badgeCount <= 8) {
-    msg = `${name}, you are absolutely incredible! Your dedication to learning is your superpower. The sky is the limit! — Sparky ⭐⭐⭐`
+    msg = t('sparky_msg_later', lang)
   } else {
-    msg = `${name}, you are a LEGEND! You've unlocked almost every badge in the app. You inspire me every single day! — Sparky ⭐⭐⭐⭐`
+    msg = t('sparky_msg_max', lang)
   }
+  msg = msg.replace('{name}', name)
   if (streak >= 7) {
-    msg += ` And ${streak} days in a row? That's the spirit of a true champion!`
+    msg += ` ${streak} ${t('sparky_streak_suffix', lang)}`
   }
   return msg
 }
 
-export default function ProgressPanel({ mode, stars, childName }) {
+export default function ProgressPanel({ mode, stars, childName, lang = 'en' }) {
   const [animated, setAnimated] = useState(false)
   const [qrDataUrl, setQrDataUrl] = useState('')
   const isChild = mode === 'child'
@@ -97,8 +111,8 @@ export default function ProgressPanel({ mode, stars, childName }) {
   const streak = getStreak()
   const totalStars = getStars()
   const earnedBadgeCount = earnedBadgeIds.length
-  const strengthHeadline = getStrengthHeadline(name, progressAreas)
-  const sparkyMessage = getSparkyMessage(name, earnedBadgeCount, streak)
+  const strengthHeadline = getStrengthHeadline(name, progressAreas, lang)
+  const sparkyMessage = getSparkyMessage(name, earnedBadgeCount, streak, lang)
   const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
 
   function printReport() { window.print() }
@@ -110,22 +124,22 @@ export default function ProgressPanel({ mode, stars, childName }) {
         // ── Child view ──────────────────────────────────────────
         <div style={styles.childBanner}>
           <span style={styles.bigEmoji} aria-hidden="true">🌱</span>
-          <h2 style={styles.childTitle}>You are growing so much!</h2>
+          <h2 style={styles.childTitle}>{t('progress_child_banner_title', lang)}</h2>
           <p style={styles.childSub}>
-            Keep learning every day and watch your bars grow! You have earned <strong>{stars} stars</strong> so far! 🎖️
+            {t('progress_child_banner_sub', lang).replace('{stars}', stars)}
           </p>
         </div>
       ) : (
         // ── Parent view header ───────────────────────────────────
         <div style={styles.parentHeader}>
           <div>
-            <h2 style={styles.sectionTitle}>Learning Progress</h2>
+            <h2 style={styles.sectionTitle}>{t('progress_parent_heading', lang)}</h2>
             <p style={styles.parentSub}>
-              Here&apos;s how {displayName} is doing across all learning areas.
+              {t('progress_parent_sub', lang).replace('{name}', displayName)}
             </p>
           </div>
           <button onClick={printReport} style={styles.printBtn} aria-label="Print progress report">
-            🖨️ Print Report
+            {t('progress_print_button', lang)}
           </button>
         </div>
       )}
@@ -150,7 +164,7 @@ export default function ProgressPanel({ mode, stars, childName }) {
             </div>
             {!isChild && area.id === 'science' && (
               <p style={styles.insight}>
-                💡 Science has the most room to grow — try the Sparky science questions!
+                {t('progress_science_insight', lang)}
               </p>
             )}
           </div>
@@ -161,11 +175,11 @@ export default function ProgressPanel({ mode, stars, childName }) {
       {!isChild && (
         <div style={styles.moodCard}>
           <h3 style={styles.moodTitle}>
-            Mood This Week
+            {t('progress_mood_heading', lang)}
             <span style={styles.moodLink}>
               &nbsp;— powered by{' '}
               <a href="https://myamazinglearner.co.uk/products/feelings-gauge-worksheet" target="_blank" rel="noopener noreferrer" style={styles.moodShopLink}>
-                Feelings Gauge
+                {t('progress_mood_link', lang)}
               </a>
             </span>
           </h3>
@@ -203,7 +217,7 @@ export default function ProgressPanel({ mode, stars, childName }) {
           <div style={pr.hero}>
             <div style={pr.heroStars} aria-hidden="true">⭐ ⭐ ⭐ ⭐ ⭐</div>
             <h1 style={pr.heroName}>{name}</h1>
-            <p style={pr.heroSub}>Amazing Learning Journey</p>
+            <p style={pr.heroSub}>{t('print_report_sub', lang)}</p>
             <p style={pr.heroStrength}>{strengthHeadline}</p>
           </div>
 
@@ -211,19 +225,19 @@ export default function ProgressPanel({ mode, stars, childName }) {
           <div style={pr.statsStrip}>
             <div style={{ ...pr.statBox, background: '#FFB347' }}>
               <div style={pr.statNum}>{totalStars}</div>
-              <div style={pr.statLbl}>⭐ Stars</div>
+              <div style={pr.statLbl}>{t('print_report_stars', lang)}</div>
             </div>
             <div style={{ ...pr.statBox, background: '#6B3FA0' }}>
               <div style={pr.statNum}>{earnedBadgeCount}/11</div>
-              <div style={pr.statLbl}>🏅 Badges</div>
+              <div style={pr.statLbl}>{t('print_report_badges', lang)}</div>
             </div>
             <div style={{ ...pr.statBox, background: '#FF6B6B' }}>
               <div style={pr.statNum}>{streak}</div>
-              <div style={pr.statLbl}>🔥 Day Streak</div>
+              <div style={pr.statLbl}>{t('print_report_streak', lang)}</div>
             </div>
             <div style={{ ...pr.statBox, background: '#4ECDC4' }}>
               <div style={pr.statNum}>{moodHistory.length}</div>
-              <div style={pr.statLbl}>😊 Check-ins</div>
+              <div style={pr.statLbl}>{t('print_report_checkins', lang)}</div>
             </div>
           </div>
 
@@ -233,7 +247,7 @@ export default function ProgressPanel({ mode, stars, childName }) {
             {/* LEFT: progress bars + crafts */}
             <div style={pr.col}>
               <div style={pr.sectionCard}>
-                <h2 style={pr.sectionTitle}>📊 Learning Progress</h2>
+                <h2 style={pr.sectionTitle}>{t('print_report_progress_title', lang)}</h2>
                 {progressAreas.map((area) => (
                   <div key={area.id} style={pr.barRow}>
                     <div style={pr.barMeta}>
@@ -248,13 +262,13 @@ export default function ProgressPanel({ mode, stars, childName }) {
               </div>
 
               <div style={pr.sectionCard}>
-                <h2 style={pr.sectionTitle}>🪡 Craft Checklist</h2>
+                <h2 style={pr.sectionTitle}>{t('print_report_crafts_title', lang)}</h2>
                 {CRAFTS.map((craft) => {
                   const done = craftsCompleted.includes(craft.id)
                   return (
                     <div key={craft.id} style={pr.craftItem}>
                       <span style={{ ...pr.craftTick, color: done ? '#2d7a2d' : '#bbb' }} aria-hidden="true">{done ? '✅' : '○'}</span>
-                      <span style={{ ...pr.craftName, color: done ? '#1a0a2e' : '#999' }}>{craft.title}</span>
+                      <span style={{ ...pr.craftName, color: done ? '#1a0a2e' : '#999' }}>{t(`craft_${CRAFT_KEY_MAP[craft.id]}_title`, lang)}</span>
                     </div>
                   )
                 })}
@@ -264,14 +278,14 @@ export default function ProgressPanel({ mode, stars, childName }) {
             {/* RIGHT: badges + Sparky */}
             <div style={pr.col}>
               <div style={pr.sectionCard}>
-                <h2 style={pr.sectionTitle}>🏅 Badges Collected</h2>
+                <h2 style={pr.sectionTitle}>{t('print_report_badges_title', lang)}</h2>
                 <div style={pr.badgeGrid}>
                   {BADGES.map((badge) => {
                     const isEarned = earnedBadgeIds.includes(badge.id)
                     return (
                       <div key={badge.id} style={{ ...pr.badgeItem, background: isEarned ? '#fff9ee' : '#f5f5f5', border: `2px solid ${isEarned ? '#FFB347' : '#e0e0e0'}`, opacity: isEarned ? 1 : 0.45 }}>
                         <span style={pr.badgeEmoji} aria-hidden="true">{isEarned ? badge.emoji : '○'}</span>
-                        <span style={{ ...pr.badgeLabel, color: isEarned ? '#3D1A5E' : '#999' }}>{badge.label}</span>
+                        <span style={{ ...pr.badgeLabel, color: isEarned ? '#3D1A5E' : '#999' }}>{t(`badge_${BADGE_KEY_MAP[badge.id] || badge.id}_label`, lang)}</span>
                       </div>
                     )
                   })}
@@ -290,17 +304,17 @@ export default function ProgressPanel({ mode, stars, childName }) {
           <div style={pr.footerBand}>
             <div style={pr.footerInner}>
               <div>
-                <p style={pr.footerTagline}>Keep being an Amazing Learner! 🚀</p>
+                <p style={pr.footerTagline}>{t('print_report_footer_tagline', lang)}</p>
                 <p style={pr.footerSite}>myamazinglearner.co.uk</p>
               </div>
               <div style={pr.footerRight}>
                 {qrDataUrl && (
-                  <img src={qrDataUrl} alt="Scan to explore resources" style={pr.qrImg} width={72} height={72} />
+                  <img src={qrDataUrl} alt={t('print_report_qr_label', lang)} style={pr.qrImg} width={72} height={72} />
                 )}
-                <p style={pr.qrLabel}>Scan to explore resources</p>
+                <p style={pr.qrLabel}>{t('print_report_qr_label', lang)}</p>
                 {/* Email to Teacher — placeholder for future sprint */}
                 <button style={pr.emailTeacherBtn} disabled aria-label="Email to Teacher — coming soon">
-                  📧 Email to Teacher (coming soon)
+                  {t('print_report_email_button', lang)}
                 </button>
               </div>
             </div>
@@ -308,7 +322,7 @@ export default function ProgressPanel({ mode, stars, childName }) {
 
           {/* DISCLAIMER — Decision C: exact client-approved wording */}
           <p className="print-disclaimer" style={pr.disclaimer}>
-            Progress scores reflect your child&apos;s activity within the My Amazing Learner app and are designed as a fun, encouraging learning guide. They are not a formal academic assessment and should not be used as such. For formal progress information, please speak with your child&apos;s class teacher.
+            {t('print_report_disclaimer', lang)}
           </p>
 
         </div>

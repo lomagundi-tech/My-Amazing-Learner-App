@@ -1,15 +1,16 @@
 import { useState } from 'react'
 import { addMood, getTodaysMood } from '../utils/storage'
+import { t } from '../utils/i18n'
 
-const MOODS = [
-  { value: 1, emoji: '😔', label: 'Not great' },
-  { value: 2, emoji: '😕', label: 'A bit meh' },
-  { value: 3, emoji: '😐', label: 'OK' },
-  { value: 4, emoji: '🙂', label: 'Good' },
-  { value: 5, emoji: '😄', label: 'Amazing!' },
+const MOOD_IDS = [
+  { id: 1, emoji: '😢' },
+  { id: 2, emoji: '😕' },
+  { id: 3, emoji: '😐' },
+  { id: 4, emoji: '🙂' },
+  { id: 5, emoji: '🤩' },
 ]
 
-export default function MoodCheckIn({ onDone }) {
+export default function MoodCheckIn({ onDone, lang = 'en' }) {
   const todaysMood = getTodaysMood()
   const [selected, setSelected] = useState(todaysMood)
 
@@ -25,32 +26,32 @@ export default function MoodCheckIn({ onDone }) {
     onDone()
   }
 
-  const picked = MOODS.find((m) => m.value === selected)
+  const picked = MOOD_IDS.find((m) => m.id === selected)
 
   return (
     <div style={styles.card}>
       {selected ? (
         <p style={styles.thanks}>
-          Thanks for sharing! {picked.emoji} Let&apos;s go learn something amazing!
+          {t('mood_thanks', lang)} {picked?.emoji}
         </p>
       ) : (
         <>
-          <p style={styles.question}>How are you feeling today?</p>
+          <p style={styles.question}>{t('mood_question', lang)}</p>
           <div style={styles.faces}>
-            {MOODS.map((m) => (
+            {MOOD_IDS.map((m) => (
               <button
-                key={m.value}
-                onClick={() => pick(m.value)}
-                aria-label={m.label}
+                key={m.id}
+                onClick={() => pick(m.id)}
+                aria-label={t(`mood_label_${m.id}`, lang)}
                 style={styles.faceBtn}
               >
                 <span style={styles.faceEmoji}>{m.emoji}</span>
-                <span style={styles.faceLabel}>{m.label}</span>
+                <span style={styles.faceLabel}>{t(`mood_label_${m.id}`, lang)}</span>
               </button>
             ))}
           </div>
           <button onClick={skip} style={styles.skipBtn} aria-label="Skip mood check-in">
-            Skip for now
+            {t('mood_skip', lang)}
           </button>
         </>
       )}

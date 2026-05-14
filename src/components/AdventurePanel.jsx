@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { TRAIL_ID, TRAIL_META, STOPS, TOKEN_TO_STOP } from '../data/trailData'
 import {
   getTrailProgress,
@@ -10,8 +10,9 @@ import {
   earnBadge,
 } from '../utils/storage'
 import { launchConfetti } from '../utils/confetti'
+import { t } from '../utils/i18n'
 
-export default function AdventurePanel({ childName, deviceId, onStarsChange, onBadgesChange }) {
+export default function AdventurePanel({ childName, deviceId, onStarsChange, onBadgesChange, lang = 'en' }) {
   const [screen, setScreen]             = useState('trail-list')
   const [progress, setProgress]         = useState(() => getTrailProgress())
   const [syncedData, setSyncedData]     = useState(() => getTrailSyncedData(TRAIL_ID))
@@ -38,6 +39,60 @@ export default function AdventurePanel({ childName, deviceId, onStarsChange, onB
     }
   }, [])
 
+  // ── Completion confetti ────────────────────────────────────────
+  useEffect(() => {
+    if (screen === 'completion') launchConfetti()
+  }, [screen])
+
+  // ── QR validation ─────────────────────────────────────────────
+  const handleQRScan = useCallback((rawText) => {
+    setScanError(null)
+    let parsed
+    try { parsed = JSON.parse(rawText) } catch {
+      setScanError(t('adventure_error_invalid_qr', lang))
+      return
+    }
+
+    const { trailId, stopNumber, token } = parsed
+
+    if (trailId !== TRAIL_ID) {
+      setScanError(t('adventure_error_invalid_qr', lang))
+      return
+    }
+    if (!token || TOKEN_TO_STOP[token] !== stopNumber) {
+      setScanError(t('adventure_error_invalid_qr', lang))
+      return
+    }
+
+    const currentProgress = getTrailProgress()
+
+    if (currentProgress.stopsCompleted.includes(stopNumber)) {
+      setScanError(t('adventure_error_already_done', lang))
+      return
+    }
+
+    const nextExpected = currentProgress.stopsCompleted.length === 0
+      ? 1
+      : Math.max(...currentProgress.stopsCompleted) + 1
+
+    if (stopNumber !== nextExpected) {
+      setScanError(t('adventure_error_wrong_order', lang))
+      return
+    }
+
+    const synced = getTrailSyncedData(TRAIL_ID)
+    const stop   = synced?.stops[stopNumber]
+    if (!stop) {
+      setScanError(t('adventure_error_load', lang))
+      return
+    }
+
+    setActiveStop(stop)
+    setQuizSelected(null)
+    setQuizResult(null)
+    setScreen('stop-content')
+  }, [lang])
+
   // ── QR scanner lifecycle ───────────────────────────────────────
   useEffect(() => {
     if (screen !== 'scanner') return
@@ -60,7 +115,7 @@ export default function AdventurePanel({ childName, deviceId, onStarsChange, onB
           () => {}
         )
       } catch {
-        if (mounted) setScanError('Camera could not be started. Please allow camera access and try again.')
+        if (mounted) setScanError(t('adventure_error_camera', lang))
       }
     }
 
@@ -73,66 +128,12 @@ export default function AdventurePanel({ childName, deviceId, onStarsChange, onB
         scannerRef.current = null
       }
     }
-  }, [screen])
-
-  // ── Completion confetti ────────────────────────────────────────
-  useEffect(() => {
-    if (screen === 'completion') launchConfetti()
-  }, [screen])
-
-  // ── QR validation ─────────────────────────────────────────────
-  function handleQRScan(rawText) {
-    setScanError(null)
-    let parsed
-    try { parsed = JSON.parse(rawText) } catch {
-      setScanError("This QR code isn't part of the trail. Keep looking! 🔍")
-      return
-    }
-
-    const { trailId, stopNumber, token } = parsed
-
-    if (trailId !== TRAIL_ID) {
-      setScanError("This QR code isn't part of the trail. Keep looking! 🔍")
-      return
-    }
-    if (!token || TOKEN_TO_STOP[token] !== stopNumber) {
-      setScanError("This QR code isn't part of the trail. Keep looking! 🔍")
-      return
-    }
-
-    const currentProgress = getTrailProgress()
-
-    if (currentProgress.stopsCompleted.includes(stopNumber)) {
-      setScanError("You've already completed this stop! Move on to the next one. ✅")
-      return
-    }
-
-    const nextExpected = currentProgress.stopsCompleted.length === 0
-      ? 1
-      : Math.max(...currentProgress.stopsCompleted) + 1
-
-    if (stopNumber !== nextExpected) {
-      setScanError(`Find stop ${nextExpected} first! The stops must be done in order. 🗺️`)
-      return
-    }
-
-    const synced = getTrailSyncedData(TRAIL_ID)
-    const stop   = synced?.stops[stopNumber]
-    if (!stop) {
-      setScanError('Some content could not be loaded. Please reconnect and start the trail again.')
-      return
-    }
-
-    setActiveStop(stop)
-    setQuizSelected(null)
-    setQuizResult(null)
-    setScreen('stop-content')
-  }
+  }, [screen, lang, handleQRScan])
 
   // ── Start trail ───────────────────────────────────────────────
   function handleStartTrail() {
     if (!isOnline) {
-      setScanError('You need a connection to start the trail. Please connect to WiFi or mobile data, then try again.')
+      setScanError(t('adventure_error_no_connection', lang))
       return
     }
     const stopsObject = Object.fromEntries(STOPS.map((s) => [s.number, s]))
@@ -227,8 +228,8 @@ export default function AdventurePanel({ childName, deviceId, onStarsChange, onB
       {/* ── Trail list ── */}
       {screen === 'trail-list' && (
         <div>
-          <h2 style={s.heading}>Adventures 🗺️</h2>
-          <p style={s.sub}>Choose a trail to explore</p>
+          <h2 style={s.heading}>{t('adventure_heading', lang)}</h2>
+          <p style={s.sub}>{t('adventure_sub', lang)}</p>
 
           <div style={s.trailCard}>
             <div style={s.trailHeader}>
@@ -239,37 +240,37 @@ export default function AdventurePanel({ childName, deviceId, onStarsChange, onB
               </div>
             </div>
             <div style={s.chips}>
-              <span style={s.chip}>⚓ {TRAIL_META.stopCount} stops</span>
-              <span style={s.chip}>⏱ ~{TRAIL_META.estimatedMinutes} mins</span>
-              <span style={s.chip}>🎁 Gift shop reward</span>
+              <span style={s.chip}>⚓ {TRAIL_META.stopCount} {t('adventure_stops', lang)}</span>
+              <span style={s.chip}>⏱ ~{TRAIL_META.estimatedMinutes} {t('adventure_mins', lang)}</span>
+              <span style={s.chip}>{t('adventure_reward_label', lang)}</span>
             </div>
 
             {(!progress || progress.status === 'NOT_STARTED') && (
               <button style={{ ...s.btn, background: 'var(--plum)' }} onClick={() => setScreen('trail-overview')}>
-                Start Exploring →
+                {t('adventure_start', lang)}
               </button>
             )}
             {progress?.status === 'IN_PROGRESS' && (
               <>
-                <p style={s.progressNote}>{stopsCount} of 8 stops complete</p>
+                <p style={s.progressNote}>{stopsCount} / 8 {t('adventure_stops', lang)}</p>
                 <button style={{ ...s.btn, background: 'var(--violet)' }} onClick={() => setScreen('trail-overview')}>
-                  Continue Trail →
+                  {t('adventure_continue', lang)}
                 </button>
               </>
             )}
             {progress?.status === 'REWARD_UNLOCKED' && (
               <>
-                <p style={{ ...s.progressNote, color: 'var(--gold)' }}>🎉 Reward unlocked!</p>
+                <p style={{ ...s.progressNote, color: 'var(--gold)' }}>{t('adventure_reward_unlocked', lang)}</p>
                 <button style={{ ...s.btn, background: '#D4A017' }} onClick={() => setScreen('reward')}>
-                  Show My Reward →
+                  {t('adventure_show_reward', lang)}
                 </button>
               </>
             )}
             {progress?.status === 'FULLY_COMPLETED' && (
               <>
-                <p style={{ ...s.progressNote, color: 'var(--mint)' }}>All 8 stops done! 🏆</p>
+                <p style={{ ...s.progressNote, color: 'var(--mint)' }}>{t('adventure_all_done_label', lang)}</p>
                 <button style={{ ...s.btn, background: 'var(--mint)', color: 'var(--text-dark)' }} onClick={() => setScreen('completion')}>
-                  View Completion →
+                  {t('adventure_view_completion', lang)}
                 </button>
               </>
             )}
@@ -280,7 +281,7 @@ export default function AdventurePanel({ childName, deviceId, onStarsChange, onB
       {/* ── Trail overview ── */}
       {screen === 'trail-overview' && (
         <div>
-          <button style={s.back} onClick={() => setScreen('trail-list')}>← Back</button>
+          <button style={s.back} onClick={() => setScreen('trail-list')}>{t('adventure_back', lang)}</button>
           <h2 style={s.heading}>{TRAIL_META.name}</h2>
           <p style={s.sub}>{TRAIL_META.venue}</p>
 
@@ -318,11 +319,11 @@ export default function AdventurePanel({ childName, deviceId, onStarsChange, onB
 
           {(!progress || progress.status === 'NOT_STARTED') ? (
             <button style={{ ...s.btn, background: 'var(--plum)' }} onClick={handleStartTrail}>
-              Start Exploring
+              {t('adventure_start', lang)}
             </button>
           ) : (
             <button style={{ ...s.btn, background: 'var(--violet)' }} onClick={() => { setScanError(null); setScreen('scanner') }}>
-              Continue Trail
+              {t('adventure_continue', lang)}
             </button>
           )}
         </div>
@@ -331,9 +332,9 @@ export default function AdventurePanel({ childName, deviceId, onStarsChange, onB
       {/* ── Scanner ── */}
       {screen === 'scanner' && (
         <div style={s.centred}>
-          <h2 style={s.heading}>Scan the QR code at this stop</h2>
-          <p style={s.sub}>Point your camera at the QR code on the plaque</p>
-          <p style={s.progressNote}>{stopsCount} of 8 stops complete</p>
+          <h2 style={s.heading}>{t('adventure_scanner_heading', lang)}</h2>
+          <p style={s.sub}>{t('adventure_scanner_sub', lang)}</p>
+          <p style={s.progressNote}>{stopsCount} / 8 {t('adventure_stops', lang)}</p>
 
           <div id="qr-viewfinder" style={s.viewfinder} />
 
@@ -345,7 +346,7 @@ export default function AdventurePanel({ childName, deviceId, onStarsChange, onB
           )}
 
           <button style={{ ...s.btn, background: 'var(--plum)', marginTop: 24 }} onClick={() => { setScanError(null); setScreen('trail-overview') }}>
-            ← Back to trail map
+            {t('adventure_back_to_map', lang)}
           </button>
         </div>
       )}
@@ -353,8 +354,8 @@ export default function AdventurePanel({ childName, deviceId, onStarsChange, onB
       {/* ── Stop content ── */}
       {screen === 'stop-content' && activeStop && (
         <div>
-          <button style={s.back} onClick={() => setScreen('scanner')}>← Back</button>
-          <div style={s.stopBadge}>Stop {activeStop.number} of 8</div>
+          <button style={s.back} onClick={() => setScreen('scanner')}>{t('adventure_back', lang)}</button>
+          <div style={s.stopBadge}>{t('adventure_stop_of', lang).replace('{n}', activeStop.number)}</div>
           <h2 style={{ ...s.heading, color: 'var(--plum)' }}>{activeStop.name}</h2>
           <p style={s.stopLocation}>{activeStop.location}</p>
           <span style={{ ...s.currTag, display: 'inline-block', marginBottom: 20 }}>{activeStop.curriculumLink}</span>
@@ -365,7 +366,7 @@ export default function AdventurePanel({ childName, deviceId, onStarsChange, onB
           </div>
 
           <button style={{ ...s.btn, background: 'var(--plum)' }} onClick={() => setScreen('stop-quiz')}>
-            Take the Quiz! 🧩
+            {t('adventure_quiz_button', lang)}
           </button>
           <p style={s.hintText}>Answer correctly to earn +{activeStop.stars} Stars ⭐</p>
         </div>
@@ -402,20 +403,20 @@ export default function AdventurePanel({ childName, deviceId, onStarsChange, onB
 
           {quizResult === 'correct' && (
             <div style={s.correctFeedback}>
-              <p style={s.correctMsg}>Amazing! +{activeStop.stars} Stars! 🌟</p>
-              <p style={s.progressNote}>{stopsCount} of 8 stops complete</p>
-              {stopsCount >= 6 && <p style={{ color: 'var(--gold)', fontWeight: 700 }}>You&apos;ve unlocked your reward! 🎉</p>}
+              <p style={s.correctMsg}>{t('adventure_quiz_correct', lang)}</p>
+              <p style={s.progressNote}>{stopsCount} / 8 {t('adventure_stops', lang)}</p>
+              {stopsCount >= 6 && <p style={{ color: 'var(--gold)', fontWeight: 700 }}>{t('adventure_quiz_reward', lang)}</p>}
               <button style={{ ...s.btn, background: 'var(--plum)' }} onClick={handleQuizNext}>
-                Next
+                {t('adventure_quiz_next', lang)}
               </button>
             </div>
           )}
 
           {quizResult === 'wrong' && (
             <div style={s.wrongFeedback}>
-              <p style={s.wrongMsg}>Not quite — have another look at the question! You can do it! 💪</p>
+              <p style={s.wrongMsg}>{t('adventure_quiz_wrong', lang)}</p>
               <button style={{ ...s.btn, background: 'var(--coral)' }} onClick={handleQuizNext}>
-                Try Again
+                {t('adventure_quiz_try_again', lang)}
               </button>
             </div>
           )}
@@ -425,12 +426,12 @@ export default function AdventurePanel({ childName, deviceId, onStarsChange, onB
       {/* ── Reward ── */}
       {screen === 'reward' && (
         <div style={s.centred}>
-          <h2 style={s.heading}>🎉 Reward Unlocked!</h2>
-          <p style={s.sub}>Show this code at the gift shop till:</p>
+          <h2 style={s.heading}>{t('adventure_reward_heading', lang)}</h2>
+          <p style={s.sub}>{t('adventure_reward_sub', lang)}</p>
 
           {codeLoading && (
             <div style={s.codeBox}>
-              <p style={{ color: 'var(--text-mid)' }}>Getting your code...</p>
+              <p style={{ color: 'var(--text-mid)' }}>{t('adventure_reward_loading', lang)}</p>
             </div>
           )}
 
@@ -440,35 +441,35 @@ export default function AdventurePanel({ childName, deviceId, onStarsChange, onB
                 <p style={s.codeText}>{progress.discountCode}</p>
               </div>
               <button style={{ ...s.btn, background: 'var(--plum)', marginBottom: 8 }} onClick={copyCode}>
-                {copied ? 'Copied! ✓' : 'Copy Code 📋'}
+                {copied ? t('adventure_copied', lang) : t('adventure_copy_code', lang)}
               </button>
-              <p style={s.hintText}>Valid for 48 hours · 10% off · Minimum spend {TRAIL_META.rewardMinSpend}</p>
+              <p style={s.hintText}>{t('adventure_reward_validity', lang)} {TRAIL_META.rewardMinSpend}</p>
             </>
           )}
 
           {!codeLoading && !progress?.discountCode && !codeError && (
             <div style={{ ...s.errorBanner, background: '#FFF3CD', color: '#856404', borderColor: 'var(--gold)' }}>
-              You&apos;ve unlocked your reward! Connect to WiFi or mobile data to get your discount code.
+              {t('adventure_reward_offline', lang)}
               <button style={{ ...s.btn, background: 'var(--plum)', marginTop: 12 }} onClick={fetchDiscountCode}>
-                Try Again
+                {t('adventure_quiz_try_again', lang)}
               </button>
             </div>
           )}
 
           {codeError && (
             <div style={s.errorBanner}>
-              Could not get your code right now. Please try again.
+              {t('adventure_reward_error', lang)}
               <button style={{ ...s.btn, background: 'var(--plum)', marginTop: 12 }} onClick={fetchDiscountCode}>
-                Try Again
+                {t('adventure_quiz_try_again', lang)}
               </button>
             </div>
           )}
 
           {stopsCount < 8 && (
             <div style={{ ...s.mintBanner, marginTop: 20 }}>
-              Keep going — complete all 8 stops for a Full Explorer badge! 🏆
+              {t('adventure_keep_going', lang)}
               <button style={{ ...s.btn, background: 'var(--plum)', marginTop: 12 }} onClick={() => { setScanError(null); setScreen('scanner') }}>
-                Continue Trail →
+                {t('adventure_continue', lang)}
               </button>
             </div>
           )}
@@ -479,9 +480,9 @@ export default function AdventurePanel({ childName, deviceId, onStarsChange, onB
       {screen === 'completion' && (
         <div style={{ ...s.centred, background: 'linear-gradient(135deg, var(--gold) 0%, #FFD93D 100%)', borderRadius: 20, padding: 32 }}>
           <div style={{ fontSize: 64 }}>🏆</div>
-          <h2 style={{ ...s.heading, color: 'var(--plum)' }}>Full Explorer!</h2>
+          <h2 style={{ ...s.heading, color: 'var(--plum)' }}>{t('adventure_completion_heading', lang)}</h2>
           <p style={{ ...s.sub, color: 'var(--plum)' }}>
-            {childName ? `Well done, ${childName}!` : 'Amazing work!'} You&apos;ve discovered the whole HMS Alliance trail.
+            {t('adventure_completion_sub', lang)}
           </p>
           <p style={{ ...s.progressNote, color: 'var(--plum)' }}>8 / 8 stops · 120 Stars earned · 🧭 Full Explorer badge</p>
 
@@ -495,7 +496,7 @@ export default function AdventurePanel({ childName, deviceId, onStarsChange, onB
           )}
 
           <button style={{ ...s.btn, background: 'var(--plum)', marginTop: 24 }} onClick={() => setScreen('trail-list')}>
-            Back to Adventures
+            {t('adventure_completion_back', lang)}
           </button>
         </div>
       )}

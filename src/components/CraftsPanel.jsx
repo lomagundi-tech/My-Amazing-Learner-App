@@ -2,8 +2,18 @@ import { useState } from 'react'
 import { CRAFTS } from '../data/craftsData'
 import { getCraftsCompleted, toggleCraft, earnBadge } from '../utils/storage'
 import { launchConfetti } from '../utils/confetti'
+import { t } from '../utils/i18n'
 
-export default function CraftsPanel({ mode, onBadgesChange }) {
+const CRAFT_KEY_MAP = {
+  1: 'pompom',
+  2: 'velcro',
+  3: 'tracing',
+  4: 'namewriting',
+  5: 'sentence',
+  6: 'timestable',
+}
+
+export default function CraftsPanel({ mode, onBadgesChange, lang = 'en' }) {
   const [completed, setCompleted] = useState(() => getCraftsCompleted())
   const isChild = mode === 'child'
 
@@ -24,12 +34,12 @@ export default function CraftsPanel({ mode, onBadgesChange }) {
       <div style={styles.header}>
         <div>
           <h2 style={styles.title}>
-            {isChild ? '🪡 Craft Activities' : '🪡 Craft-to-Digital Activities'}
+            {isChild ? t('craft_title_child', lang) : t('craft_title_parent', lang)}
           </h2>
           <p style={styles.sub}>
             {isChild
-              ? 'Pick a craft and get your kit ready — then tick it off when you\'re done!'
-              : 'Each activity bridges your physical MAL product with a digital learning experience.'}
+              ? t('craft_sub_child', lang)
+              : t('craft_sub_parent', lang)}
           </p>
         </div>
         <div style={styles.counter}>
@@ -51,10 +61,10 @@ export default function CraftsPanel({ mode, onBadgesChange }) {
                 opacity: isDone ? 0.85 : 1,
               }}
             >
-              {isDone && <div style={styles.doneOverlay}>✅ Done!</div>}
+              {isDone && <div style={styles.doneOverlay}>{t('craft_done_overlay', lang)}</div>}
               <div style={styles.cardAge}>{craft.ages}</div>
-              <h3 style={styles.cardTitle}>{craft.title}</h3>
-              <p style={styles.cardDesc}>{craft.desc}</p>
+              <h3 style={styles.cardTitle}>{t(`craft_${CRAFT_KEY_MAP[craft.id]}_title`, lang)}</h3>
+              <p style={styles.cardDesc}>{t(`craft_${CRAFT_KEY_MAP[craft.id]}_desc`, lang)}</p>
               <div style={styles.cardActions}>
                 <a
                   href={craft.url}
@@ -63,7 +73,7 @@ export default function CraftsPanel({ mode, onBadgesChange }) {
                   style={styles.shopBtn}
                   aria-label={`${isChild ? 'Get the kit' : 'Shop this resource'}: ${craft.title}`}
                 >
-                  {isChild ? 'Get the kit! 🛒' : 'Shop this resource →'}
+                  {isChild ? t('craft_shop_cta_child', lang) : t('craft_shop_cta_parent', lang)}
                 </a>
                 <button
                   onClick={() => handleToggle(craft.id)}
@@ -84,7 +94,7 @@ export default function CraftsPanel({ mode, onBadgesChange }) {
 
       {completed.length === 6 && (
         <div style={styles.allDone}>
-          🎖️ You completed all 6 crafts! Craft Master badge unlocked!
+          {t('craft_all_done', lang)}
         </div>
       )}
     </div>

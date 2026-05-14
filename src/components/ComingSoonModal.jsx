@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
+import { t } from '../utils/i18n'
 
 const NOTIFY_KEY = 'mal_notify_email'
 
-export default function ComingSoonModal({ tier, onClose }) {
+export default function ComingSoonModal({ tier, onClose, lang = 'en' }) {
   const [email, setEmail]       = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [error, setError]       = useState('')
@@ -23,7 +24,7 @@ export default function ComingSoonModal({ tier, onClose }) {
     e.preventDefault()
     const trimmed = email.trim()
     if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-      setError('Please enter a valid email address.')
+      setError(t('coming_soon_email_error', lang))
       return
     }
     try {
@@ -53,44 +54,37 @@ export default function ComingSoonModal({ tier, onClose }) {
         {submitted ? (
           <div style={s.successState}>
             <span style={s.bigEmoji} aria-hidden="true">🎉</span>
-            <h2 style={s.title}>You&apos;re on the list!</h2>
-            <p style={s.sub}>
-              We&apos;ll email you the moment <strong>{tier}</strong> launches.
-              You&apos;ll be among the first to experience it!
-            </p>
+            <h2 style={s.title}>{t('coming_soon_success_title', lang)}</h2>
+            <p style={s.sub}>{t('coming_soon_success_sub', lang)}</p>
             <button onClick={onClose} className="btn btn-primary" style={s.doneBtn}>
-              Sounds brilliant! 🚀
+              {t('coming_soon_success_cta', lang)}
             </button>
           </div>
         ) : (
           <>
             <span style={s.bigEmoji} aria-hidden="true">🚀</span>
-            <h2 id="csm-title" style={s.title}>Coming Soon!</h2>
-            <p style={s.sub}>
-              <strong>{tier}</strong> is launching very soon. Drop your email below
-              and we&apos;ll notify you the moment it&apos;s live — plus an exclusive
-              early-bird discount just for you! 🎁
-            </p>
+            <h2 id="csm-title" style={s.title}>{t('coming_soon_title', lang)}</h2>
+            <p style={s.sub}>{t('coming_soon_sub', lang).replace('{tier}', tier)}</p>
 
             <form onSubmit={handleSubmit} noValidate style={s.form}>
-              <label htmlFor="csm-email" style={s.label}>Your email address</label>
+              <label htmlFor="csm-email" style={s.label}>{t('coming_soon_email_label', lang)}</label>
               <input
                 id="csm-email"
                 ref={inputRef}
                 type="email"
                 value={email}
                 onChange={(e) => { setEmail(e.target.value); setError('') }}
-                placeholder="you@example.com"
+                placeholder={t('coming_soon_email_label', lang)}
                 style={{ ...s.input, borderColor: error ? '#E63737' : 'rgba(107,63,160,0.25)' }}
                 autoComplete="email"
               />
               {error && <p style={s.errorText} role="alert">{error}</p>}
               <button type="submit" className="btn btn-primary" style={s.submitBtn}>
-                Notify Me ✨
+                {t('coming_soon_submit', lang)}
               </button>
             </form>
 
-            <p style={s.note}>No spam — ever. Unsubscribe any time.</p>
+            <p style={s.note}>{t('coming_soon_note', lang)}</p>
           </>
         )}
       </div>

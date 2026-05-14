@@ -3,35 +3,34 @@ import { LEVELS, SUBJECTS } from '../data/quizData'
 import { getStars } from '../utils/storage'
 import MoodCheckIn from './MoodCheckIn'
 import { useState, useRef } from 'react'
+import { t } from '../utils/i18n'
 
-const CORRECT_MSGS = ['Amazing! 🎉', 'You got it! 🚀', 'Brilliant! 🌟', 'Superstar! 🦄']
-
-export default function QuizPanel({ mode, onStarsChange, onBadgesChange }) {
+export default function QuizPanel({ mode, onStarsChange, onBadgesChange, lang = 'en' }) {
   const { level, subject, questions, current, selected, feedback, changeLevel, changeSubject, answer, next } = useQuiz(onStarsChange, onBadgesChange)
   const [moodDone, setMoodDone] = useState(false)
   const isChild = mode === 'child'
   const stars = getStars()
 
   // Pick a random correct message once per question — stable across re-renders
-  const correctMsgRef = useRef(CORRECT_MSGS[0])
+  const correctMsgRef = useRef(t('quiz_correct_child', lang))
   if (!selected) {
-    correctMsgRef.current = CORRECT_MSGS[Math.floor(Math.random() * CORRECT_MSGS.length)]
+    correctMsgRef.current = t('quiz_correct_child', lang)
   }
-  const correctMsg = isChild ? correctMsgRef.current : 'Correct! Well done.'
+  const correctMsg = isChild ? correctMsgRef.current : t('quiz_correct_parent', lang)
   const wrongMsg = isChild
-    ? "Not quite — but you're learning! Try the next one 💛"
-    : 'Not quite. The correct answer is highlighted below.'
+    ? t('quiz_wrong_child', lang)
+    : t('quiz_wrong_parent', lang)
 
   return (
     <div className="panel-enter" style={styles.wrapper}>
       {/* Mood check-in (child mode, once per day) */}
       {isChild && !moodDone && (
-        <MoodCheckIn onDone={() => setMoodDone(true)} />
+        <MoodCheckIn lang={lang} onDone={() => setMoodDone(true)} />
       )}
 
       {/* Star counter */}
       <div style={styles.starBar}>
-        <span style={styles.starCount}>⭐ {stars} stars earned</span>
+        <span style={styles.starCount}>⭐ {t('quiz_star_counter', lang).replace('{n}', stars)}</span>
       </div>
 
       {/* Level selector */}
@@ -48,7 +47,7 @@ export default function QuizPanel({ mode, onStarsChange, onBadgesChange }) {
               borderColor: level === l.id ? l.colour : 'rgba(0,0,0,0.1)',
             }}
           >
-            {l.emoji} {l.label} <span style={styles.ageTag}>{l.ages}</span>
+            {l.emoji} {t(`quiz_level_${l.id}`, lang)} <span style={styles.ageTag}>{l.ages}</span>
           </button>
         ))}
       </div>
@@ -73,7 +72,7 @@ export default function QuizPanel({ mode, onStarsChange, onBadgesChange }) {
                 borderColor: isActive ? 'var(--plum)' : 'transparent',
               }}
             >
-              {s.emoji} {s.label}
+              {s.emoji} {s.id === 'all' ? t('quiz_subject_all', lang) : t(`quiz_subject_${s.id.toLowerCase()}`, lang)}
               <span style={{ ...styles.subjectCount, opacity: isActive ? 0.8 : 0.6 }}>
                 {s.id === 'all' ? questions.length : count}
               </span>
@@ -85,7 +84,7 @@ export default function QuizPanel({ mode, onStarsChange, onBadgesChange }) {
       {/* Question card */}
       {questions.length === 0 ? (
         <div style={styles.emptyState}>
-          No questions for this combination yet — try a different subject or level!
+          {t('quiz_empty_state', lang)}
         </div>
       ) : (
         <div style={styles.questionCard} key={current?.id}>
@@ -137,7 +136,7 @@ export default function QuizPanel({ mode, onStarsChange, onBadgesChange }) {
 
           {selected && (
             <button onClick={next} style={styles.nextBtn}>
-              Next Question →
+              {t('quiz_next_button', lang)}
             </button>
           )}
         </div>

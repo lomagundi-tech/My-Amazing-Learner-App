@@ -1,23 +1,24 @@
 import { useState } from 'react'
 import { MARKET_STATS, MARKET_GAPS } from '../data/marketData'
 import { getTodaysChallenge } from '../data/dailyChallenges'
-import { addStar, getStars, setStars, hasAnsweredTodaysChallenge, setDailyChallengedDate, clearAll } from '../utils/storage'
+import { getStars, setStars, hasAnsweredTodaysChallenge, setDailyChallengedDate, clearAll } from '../utils/storage'
 import ComingSoonModal from './ComingSoonModal'
+import { t } from '../utils/i18n'
 
-export default function HomePanel({ mode, onTabChange, onModeSwitch, onEditName, childName, stars, streak, onStarsChange }) {
+export default function HomePanel({ mode, onTabChange, onModeSwitch, onEditName, childName, stars, streak, onStarsChange, lang = 'en' }) {
   const isChild = mode === 'child'
   return (
     <div className="panel-enter">
       {isChild
-        ? <ChildHome onTabChange={onTabChange} childName={childName} stars={stars} streak={streak} onStarsChange={onStarsChange} />
-        : <ParentHome onTabChange={onTabChange} onModeSwitch={onModeSwitch} onEditName={onEditName} childName={childName} stars={stars} streak={streak} onStarsChange={onStarsChange} />
+        ? <ChildHome lang={lang} onTabChange={onTabChange} childName={childName} stars={stars} streak={streak} onStarsChange={onStarsChange} />
+        : <ParentHome lang={lang} onTabChange={onTabChange} onModeSwitch={onModeSwitch} onEditName={onEditName} childName={childName} stars={stars} streak={streak} onStarsChange={onStarsChange} />
       }
     </div>
   )
 }
 
 /* ── Daily Challenge ────────────────────────────────────────── */
-function DailyChallenge({ mode, onStarsChange }) {
+function DailyChallenge({ mode, onStarsChange, lang = 'en' }) {
   const challenge = getTodaysChallenge()
   const correctAnswer = challenge.options[challenge.correctIndex]
   const [selected, setSelected] = useState(null)
@@ -70,8 +71,8 @@ function DailyChallenge({ mode, onStarsChange }) {
         <>
           <p style={{ ...dc.result, color: correct ? '#1a6b67' : '#b22222' }}>
             {correct
-              ? (isChild ? 'Brilliant! +2 stars ⭐⭐' : 'Correct! +2 stars earned.')
-              : (isChild ? `Not quite — the answer was ${correctAnswer} 💛` : `The answer was ${correctAnswer}.`)}
+              ? (isChild ? t('quiz_correct_child', lang) : t('quiz_correct_parent', lang))
+              : (isChild ? t('quiz_wrong_child', lang) : t('quiz_wrong_parent', lang))}
           </p>
           <div style={dc.funFact}>
             <span style={dc.funFactIcon} aria-hidden="true">💡</span>
@@ -90,16 +91,17 @@ const PLANS = [
     name: 'Free',
     price: '£0',
     period: 'forever',
+    periodKey: 'pricing_free_period',
     colour: 'var(--mint)',
     features: [
-      'All 7 learning panels',
-      'Daily challenge questions',
-      'Sparky AI tutor (10 msgs/day)',
-      'Quiz – Budding level',
-      'Basic progress tracking',
-      '6 SEN accessibility tools',
+      'pricing_free_f1',
+      'pricing_free_f2',
+      'pricing_free_f3',
+      'pricing_free_f4',
+      'pricing_free_f5',
+      'pricing_free_f6',
     ],
-    cta: 'Get Started Free',
+    ctaKey: 'pricing_free_cta',
     ctaStyle: 'outline',
   },
   {
@@ -107,17 +109,18 @@ const PLANS = [
     name: 'AMAZING',
     price: '£4.99',
     period: '/mo  ·  or £39.99/yr',
+    periodKey: 'pricing_amazing_period',
     colour: 'var(--violet)',
     recommended: true,
     features: [
-      'Everything in Free',
-      'Unlimited Sparky AI conversations',
-      'Full quiz bank — all 3 levels',
-      'Printable progress reports',
-      'Mood trend analytics',
-      'Early access to new features',
+      'pricing_amazing_f1',
+      'pricing_amazing_f2',
+      'pricing_amazing_f3',
+      'pricing_amazing_f4',
+      'pricing_amazing_f5',
+      'pricing_amazing_f6',
     ],
-    cta: 'Start Free Trial',
+    ctaKey: 'pricing_amazing_cta',
     ctaStyle: 'primary',
   },
   {
@@ -125,20 +128,21 @@ const PLANS = [
     name: 'AMAZING Family',
     price: '£7.99',
     period: '/mo  ·  or £59.99/yr',
+    periodKey: 'pricing_family_period',
     colour: 'var(--gold)',
     features: [
-      'Everything in AMAZING',
-      'Up to 4 child profiles',
-      'Family progress dashboard',
-      'Exclusive craft pack downloads',
-      'Priority support',
+      'pricing_family_f1',
+      'pricing_family_f2',
+      'pricing_family_f3',
+      'pricing_family_f4',
+      'pricing_family_f5',
     ],
-    cta: 'Best for Families',
+    ctaKey: 'pricing_family_cta',
     ctaStyle: 'gold',
   },
 ]
 
-function PricingSection({ onTabChange, onModeSwitch }) {
+function PricingSection({ onTabChange, onModeSwitch, lang = 'en' }) {
   const [modalTier, setModalTier] = useState(null)
 
   function handleCta(plan) {
@@ -152,9 +156,9 @@ function PricingSection({ onTabChange, onModeSwitch }) {
 
   return (
     <div>
-      {modalTier && <ComingSoonModal tier={modalTier} onClose={() => setModalTier(null)} />}
-      <h3 style={{ ...s.sectionTitle, color: 'var(--plum)' }}>Simple, Honest Pricing</h3>
-      <p style={{ ...s.intro, marginBottom: '20px' }}>Start free. Upgrade when you&apos;re ready.</p>
+      {modalTier && <ComingSoonModal lang={lang} tier={modalTier} onClose={() => setModalTier(null)} />}
+      <h3 style={{ ...s.sectionTitle, color: 'var(--plum)' }}>{t('pricing_title', lang)}</h3>
+      <p style={{ ...s.intro, marginBottom: '20px' }}>{t('pricing_intro', lang)}</p>
       <div style={p.grid}>
         {PLANS.map((plan) => (
           <div
@@ -167,20 +171,20 @@ function PricingSection({ onTabChange, onModeSwitch }) {
             }}
           >
             {plan.recommended && (
-              <div style={p.recommendedBadge}>⭐ Recommended</div>
+              <div style={p.recommendedBadge}>{t('pricing_recommended', lang)}</div>
             )}
             <h4 style={{ ...p.planName, color: plan.colour === 'var(--gold)' ? '#b8860b' : plan.colour }}>
               {plan.name}
             </h4>
             <div style={p.priceRow}>
               <span style={p.priceNum}>{plan.price}</span>
-              <span style={p.pricePeriod}>{plan.period}</span>
+              <span style={p.pricePeriod}>{t(plan.periodKey, lang)}</span>
             </div>
             <ul style={p.featureList}>
               {plan.features.map((f) => (
                 <li key={f} style={p.featureItem}>
                   <span style={{ color: plan.colour === 'var(--gold)' ? '#b8860b' : plan.colour }} aria-hidden="true">✓</span>
-                  {f}
+                  {t(f, lang)}
                 </li>
               ))}
             </ul>
@@ -189,7 +193,7 @@ function PricingSection({ onTabChange, onModeSwitch }) {
               className={plan.ctaStyle === 'primary' ? 'btn btn-primary' : plan.ctaStyle === 'gold' ? 'btn btn-gold' : 'btn btn-outline'}
               style={p.ctaBtn}
             >
-              {plan.cta}
+              {t(plan.ctaKey, lang)}
             </button>
           </div>
         ))}
@@ -199,7 +203,7 @@ function PricingSection({ onTabChange, onModeSwitch }) {
 }
 
 /* ── Parent Home ────────────────────────────────────────────── */
-function ParentHome({ onTabChange, onModeSwitch, onEditName, childName, stars, streak, onStarsChange }) {
+function ParentHome({ onTabChange, onModeSwitch, onEditName, childName, stars, streak, onStarsChange, lang = 'en' }) {
   const name = childName || 'your learner'
   const [confirmClear, setConfirmClear] = useState(false)
 
@@ -219,13 +223,13 @@ function ParentHome({ onTabChange, onModeSwitch, onEditName, childName, stars, s
         {childName && (
           <div style={s.profileRow}>
             <span style={s.profileLabel}>Editing profile for: <strong>{childName}</strong></span>
-            <button onClick={onEditName} style={s.editNameBtn}>Edit name</button>
+            <button onClick={onEditName} style={s.editNameBtn}>{t('parent_edit_name', lang)}</button>
           </div>
         )}
         <div style={s.welcomeTop}>
           <div>
             <h2 style={{ ...s.heading, color: 'var(--plum)' }}>
-              Welcome back{childName ? `, ${childName}'s parent` : ''}! 🦉
+              {t('parent_welcome_back', lang)}{childName ? `, ${childName}'s parent` : ''}! 🦉
             </h2>
             <p style={s.intro}>
               Track {name}&apos;s learning, chat with Sparky, and explore activities matched to their level.
@@ -242,17 +246,17 @@ function ParentHome({ onTabChange, onModeSwitch, onEditName, childName, stars, s
         <div style={s.quickStats}>
           <div style={s.statPill}>⭐ {stars} stars earned</div>
           <button className="btn btn-primary" onClick={() => onTabChange(1)} style={{ fontSize: '0.875rem' }}>
-            Open Sparky 🔮
+            {t('parent_open_sparky', lang)}
           </button>
         </div>
       </div>
 
       {/* Daily challenge */}
-      <DailyChallenge mode="parent" onStarsChange={onStarsChange} />
+      <DailyChallenge lang={lang} mode="parent" onStarsChange={onStarsChange} />
 
       {/* Market Stats */}
       <div>
-        <h3 style={{ ...s.sectionTitle, color: 'var(--plum)' }}>Market Opportunity</h3>
+        <h3 style={{ ...s.sectionTitle, color: 'var(--plum)' }}>{t('parent_market_heading', lang)}</h3>
         <div style={s.statsGrid}>
           {MARKET_STATS.map((stat) => (
             <div key={stat.id} className="card" style={{ ...s.statCard, borderTop: `4px solid ${stat.colour}` }}>
@@ -266,7 +270,7 @@ function ParentHome({ onTabChange, onModeSwitch, onEditName, childName, stars, s
 
       {/* Market Gaps */}
       <div>
-        <h3 style={{ ...s.sectionTitle, color: 'var(--plum)' }}>Where MAL Wins</h3>
+        <h3 style={{ ...s.sectionTitle, color: 'var(--plum)' }}>{t('parent_gaps_heading', lang)}</h3>
         <div style={s.gapsGrid}>
           {MARKET_GAPS.map((gap) => (
             <div key={gap.id} className="card" style={{ ...s.gapCard, borderLeft: `4px solid ${gap.colour}` }}>
@@ -279,42 +283,38 @@ function ParentHome({ onTabChange, onModeSwitch, onEditName, childName, stars, s
       </div>
 
       {/* Pricing */}
-      <PricingSection onTabChange={onTabChange} onModeSwitch={onModeSwitch} />
+      <PricingSection lang={lang} onTabChange={onTabChange} onModeSwitch={onModeSwitch} />
 
       {/* Shop Banner */}
       <div style={s.shopBanner}>
         <div>
-          <h3 style={s.shopHeading}>Explore the MAL Shop</h3>
-          <p style={s.shopDesc}>Laminated worksheets, velcro mats, personalised literacy packs — paired with this app.</p>
+          <h3 style={s.shopHeading}>{t('parent_shop_heading', lang)}</h3>
+          <p style={s.shopDesc}>{t('parent_shop_desc', lang)}</p>
         </div>
         <a href="https://myamazinglearner.co.uk" target="_blank" rel="noopener noreferrer" className="btn btn-gold" style={{ flexShrink: 0 }}>
-          Visit Shop →
+          {t('parent_shop_cta', lang)}
         </a>
       </div>
 
       {/* GDPR — Clear My Data */}
       <div style={s.gdprCard}>
         <div>
-          <p style={s.gdprTitle}>Privacy &amp; Data</p>
-          <p style={s.gdprDesc}>
-            All progress, mood, and badge data is stored locally on this device only — never uploaded.
-            You can delete it at any time.{' '}
-            <strong>Note:</strong> progress will not save in private or incognito browsing mode.
-          </p>
+          <p style={s.gdprTitle}>{t('parent_gdpr_title', lang)}</p>
+          <p style={s.gdprDesc}>{t('parent_gdpr_desc', lang)}</p>
         </div>
         {confirmClear ? (
           <div style={s.gdprConfirmRow}>
-            <span style={s.gdprConfirmText}>Are you sure? This cannot be undone.</span>
+            <span style={s.gdprConfirmText}>{t('parent_clear_confirm', lang)}</span>
             <button onClick={handleClearData} style={{ ...s.gdprBtn, background: 'var(--coral)', color: '#fff' }}>
-              Yes, clear everything
+              {t('parent_clear_yes', lang)}
             </button>
             <button onClick={() => setConfirmClear(false)} style={s.gdprBtn}>
-              Cancel
+              {t('parent_clear_cancel', lang)}
             </button>
           </div>
         ) : (
           <button onClick={handleClearData} style={s.gdprBtn}>
-            🗑️ Clear My Data
+            {t('parent_clear_button', lang)}
           </button>
         )}
       </div>
@@ -323,22 +323,22 @@ function ParentHome({ onTabChange, onModeSwitch, onEditName, childName, stars, s
 }
 
 /* ── Child Home ─────────────────────────────────────────────── */
-function ChildHome({ onTabChange, childName, stars, streak, onStarsChange }) {
+function ChildHome({ onTabChange, childName, stars, streak, onStarsChange, lang = 'en' }) {
   const greeting = childName ? `Hi ${childName}!` : 'Hi there!'
   const activities = [
-    { label: '🔮 Chat with Sparky', tab: 1, bg: 'var(--violet)', desc: 'Ask me anything!' },
-    { label: '🧩 Play a Quiz',      tab: 2, bg: 'var(--coral)',  desc: 'Win medals and badges!' },
-    { label: '🌱 See Progress',     tab: 3, bg: 'var(--mint)',   desc: 'Watch yourself grow!' },
-    { label: '🪡 Try a Craft',      tab: 4, bg: 'var(--gold)',   desc: 'Make something amazing!' },
-    { label: '🎖️ My Rewards',      tab: 5, bg: 'var(--plum)',   desc: 'Collect all 11 badges!' },
-    { label: '🌈 SEN Tools',        tab: 6, bg: 'var(--sky)',    desc: 'Learning your way!' },
+    { labelKey: 'child_activity_sparky', tab: 1, bg: 'var(--violet)', descKey: 'child_activity_sparky_desc' },
+    { labelKey: 'child_activity_quiz', tab: 2, bg: 'var(--coral)', descKey: 'child_activity_quiz_desc' },
+    { labelKey: 'child_activity_progress', tab: 3, bg: 'var(--mint)', descKey: 'child_activity_progress_desc' },
+    { labelKey: 'child_activity_craft', tab: 4, bg: 'var(--gold)', descKey: 'child_activity_craft_desc' },
+    { labelKey: 'child_activity_rewards', tab: 5, bg: 'var(--plum)', descKey: 'child_activity_rewards_desc' },
+    { labelKey: 'child_activity_sen', tab: 6, bg: 'var(--sky)', descKey: 'child_activity_sen_desc' },
   ]
 
   return (
     <div style={s.section}>
       <div style={s.childWelcome}>
         <span style={s.childEmoji} aria-hidden="true">🦄</span>
-        <h2 style={{ ...s.heading, color: 'var(--coral)' }}>{greeting} Ready to learn? 🚀</h2>
+        <h2 style={{ ...s.heading, color: 'var(--coral)' }}>{greeting} {t('child_ready_headline', lang)}</h2>
         <div style={s.childStats}>
           {stars > 0 && <span style={s.statPill}>⭐ {stars} stars</span>}
           {streak > 1 && <span style={{ ...s.statPill, background: 'var(--coral)' }}>🔥 {streak} day streak!</span>}
@@ -346,7 +346,7 @@ function ChildHome({ onTabChange, childName, stars, streak, onStarsChange }) {
       </div>
 
       {/* Daily challenge */}
-      <DailyChallenge mode="child" onStarsChange={onStarsChange} />
+      <DailyChallenge lang={lang} mode="child" onStarsChange={onStarsChange} />
 
       <div style={s.activitiesGrid}>
         {activities.map((act) => (
@@ -354,10 +354,10 @@ function ChildHome({ onTabChange, childName, stars, streak, onStarsChange }) {
             key={act.tab}
             onClick={() => onTabChange(act.tab)}
             style={{ ...s.activityCard, background: act.bg }}
-            aria-label={`Go to ${act.label}`}
+            aria-label={t(act.labelKey, lang)}
           >
-            <span style={s.activityLabel}>{act.label}</span>
-            <span style={s.activityDesc}>{act.desc}</span>
+            <span style={s.activityLabel}>{t(act.labelKey, lang)}</span>
+            <span style={s.activityDesc}>{t(act.descKey, lang)}</span>
           </button>
         ))}
       </div>

@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { getSenActive, toggleSenTool } from '../utils/storage'
 import { SEN_TOOLS } from '../utils/senTools'
+import { t } from '../utils/i18n'
 
-export default function SENPanel({ mode }) {
+export default function SENPanel({ mode, lang = 'en' }) {
   const [activeTools, setActiveTools] = useState(() => getSenActive())
   const isChild = mode === 'child'
 
@@ -19,15 +20,15 @@ export default function SENPanel({ mode }) {
     <div className="panel-enter" style={styles.wrapper}>
 
       <div style={styles.header}>
-        <h2 style={styles.title}>🌈 Accessibility & SEN Tools</h2>
+        <h2 style={styles.title}>{t('sen_title', lang)}</h2>
         <p style={styles.sub}>
           {isChild
-            ? 'Turn on the tools that help you learn your way! Tap any card to switch it on or off. 💙'
-            : 'My Amazing Learner is designed for every learner. Toggle any tool on — changes apply instantly across the whole app.'}
+            ? t('sen_sub_child', lang)
+            : t('sen_sub_parent', lang)}
         </p>
         {anyActive && (
           <div style={styles.activeBanner}>
-            <span>✅ {activeTools.length} tool{activeTools.length > 1 ? 's' : ''} currently active</span>
+            <span>✅ {t(activeTools.length === 1 ? 'sen_active_banner' : 'sen_active_banner_plural', lang).replace('{n}', activeTools.length)}</span>
             <button
               onClick={() => {
                 activeTools.forEach((id) => {
@@ -39,7 +40,7 @@ export default function SENPanel({ mode }) {
               }}
               style={styles.clearBtn}
             >
-              Turn all off
+              {t('sen_clear_all', lang)}
             </button>
           </div>
         )}
@@ -68,14 +69,14 @@ export default function SENPanel({ mode }) {
                   background: isOn ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.08)',
                   color: isOn ? '#fff' : 'var(--text-mid)',
                 }}>
-                  {isOn ? 'ON' : 'OFF'}
+                  {isOn ? t('sen_tool_on', lang) : t('sen_tool_off', lang)}
                 </span>
               </div>
               <h3 style={{ ...styles.toolName, color: isOn ? '#fff' : 'var(--text-dark)' }}>
-                {tool.label}
+                {t(`sen_tool_${tool.translationId || tool.id}`, lang)}
               </h3>
               <p style={{ ...styles.toolDesc, color: isOn ? 'rgba(255,255,255,0.82)' : 'var(--text-mid)' }}>
-                {tool.desc}
+                {t(`sen_tool_${tool.translationId || tool.id}_desc`, lang)}
               </p>
             </button>
           )
@@ -85,18 +86,16 @@ export default function SENPanel({ mode }) {
       <div style={styles.insightCallout}>
         <span style={styles.insightEmoji} aria-hidden="true">💙</span>
         <div>
-          <h3 style={styles.insightTitle}>Our Commitment to Every Learner</h3>
+          <h3 style={styles.insightTitle}>{t('sen_commitment_heading', lang)}</h3>
           <p style={styles.insightBody}>
-            22% of KS2 pupils in the UK have identified SEN — and most educational apps simply ignore them.
-            My Amazing Learner is built from day one with accessibility as a first-class feature, not an afterthought.
-            We also offer a dedicated{' '}
+            {t('sen_commitment_body', lang)}{' '}
             <a
               href="https://myamazinglearner.co.uk/collections/sen-resources"
               target="_blank"
               rel="noopener noreferrer"
               style={styles.insightLink}
             >
-              SEN physical resources collection
+              {t('sen_commitment_link', lang)}
             </a>.
           </p>
         </div>

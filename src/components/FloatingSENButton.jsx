@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { getSenActive, toggleSenTool, getSenTooltipShown, setSenTooltipShown } from '../utils/storage'
 import { SEN_TOOLS, applyAllActive } from '../utils/senTools'
+import { t } from '../utils/i18n'
 
-export default function FloatingSENButton({ activeTab }) {
+export default function FloatingSENButton({ activeTab, lang = 'en' }) {
   const [open, setOpen] = useState(false)
   const [activeTools, setActiveTools] = useState(() => getSenActive())
   const [showTooltip, setShowTooltip] = useState(false)
@@ -59,7 +60,7 @@ export default function FloatingSENButton({ activeTab }) {
       {/* Tooltip */}
       {showTooltip && !open && (
         <div style={st.tooltip} role="status" aria-live="polite">
-          Tap here for accessibility tools ♿
+          {t('floating_sen_tooltip', lang)}
         </div>
       )}
 
@@ -74,10 +75,10 @@ export default function FloatingSENButton({ activeTab }) {
         >
           <div style={st.modal}>
             <div style={st.modalHeader}>
-              <h2 style={st.modalTitle}>♿ Accessibility Tools</h2>
-              <button onClick={() => setOpen(false)} style={st.closeBtn} aria-label="Close accessibility tools">✕</button>
+              <h2 style={st.modalTitle}>{t('floating_sen_modal_heading', lang)}</h2>
+              <button onClick={() => setOpen(false)} style={st.closeBtn} aria-label={t('floating_sen_close', lang)}>✕</button>
             </div>
-            <p style={st.modalSub}>Tap a tool to turn it on or off. Settings are saved automatically.</p>
+            <p style={st.modalSub}>{t('floating_sen_modal_sub', lang)}</p>
             <div style={st.toolsGrid}>
               {SEN_TOOLS.map((tool) => {
                 const isOn = activeTools.includes(tool.id)
@@ -94,12 +95,12 @@ export default function FloatingSENButton({ activeTab }) {
                     }}
                   >
                     <span style={st.toolEmoji} aria-hidden="true">{tool.emoji}</span>
-                    <span style={st.toolLabel}>{tool.label}</span>
+                    <span style={st.toolLabel}>{t(`sen_tool_${tool.translationId || tool.id}`, lang)}</span>
                     <span style={{ ...st.toolStatus, color: isOn ? 'rgba(255,255,255,0.8)' : 'var(--text-mid)' }}>
-                      {isOn ? 'ON' : 'OFF'}
+                      {isOn ? t('sen_tool_on', lang) : t('sen_tool_off', lang)}
                     </span>
                     <span style={{ ...st.toolDesc, color: isOn ? 'rgba(255,255,255,0.75)' : 'var(--text-mid)' }}>
-                      {tool.desc}
+                      {t(`sen_tool_${tool.translationId || tool.id}_desc`, lang)}
                     </span>
                   </button>
                 )
