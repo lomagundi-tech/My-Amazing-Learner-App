@@ -17,6 +17,14 @@ export default function HomePanel({ mode, onTabChange, onModeSwitch, onEditName,
   )
 }
 
+const DC_SUBJECT_KEYS = {
+  'Maths': 'quiz_subject_maths',
+  'English': 'quiz_subject_english',
+  'Science': 'quiz_subject_science',
+  'Geography': 'myarea_cat_geography',
+  'General Knowledge': 'quiz_subject_general',
+}
+
 /* ── Daily Challenge ────────────────────────────────────────── */
 function DailyChallenge({ mode, onStarsChange, lang = 'en' }) {
   const challenge = getTodaysChallenge()
@@ -37,14 +45,17 @@ function DailyChallenge({ mode, onStarsChange, lang = 'en' }) {
   }
 
   const correct = selected === correctAnswer
+  const subjectLabel = DC_SUBJECT_KEYS[challenge.subject]
+    ? t(DC_SUBJECT_KEYS[challenge.subject], lang)
+    : challenge.subject
 
   return (
     <div style={dc.card}>
-      <div style={dc.badge}>✨ Daily Challenge — {challenge.subject}</div>
+      <div style={dc.badge}>{t('daily_challenge_title', lang)} — {subjectLabel}</div>
       <p style={dc.question}>{challenge.question}</p>
 
       {answered && !selected ? (
-        <p style={dc.done}>Already answered today — come back tomorrow! 🌅</p>
+        <p style={dc.done}>{t('daily_challenge_answered', lang)}</p>
       ) : (
         <div style={dc.opts}>
           {challenge.options.map((opt) => {
@@ -71,12 +82,17 @@ function DailyChallenge({ mode, onStarsChange, lang = 'en' }) {
         <>
           <p style={{ ...dc.result, color: correct ? '#1a6b67' : '#b22222' }}>
             {correct
-              ? (isChild ? t('quiz_correct_child', lang) : t('quiz_correct_parent', lang))
-              : (isChild ? t('quiz_wrong_child', lang) : t('quiz_wrong_parent', lang))}
+              ? (isChild ? t('daily_challenge_correct_child', lang) : t('daily_challenge_correct_parent', lang))
+              : (isChild
+                  ? t('daily_challenge_wrong_child', lang).replace('{answer}', correctAnswer)
+                  : t('daily_challenge_wrong_parent', lang).replace('{answer}', correctAnswer))}
           </p>
           <div style={dc.funFact}>
             <span style={dc.funFactIcon} aria-hidden="true">💡</span>
-            <p style={dc.funFactText}>{challenge.funFact}</p>
+            <div>
+              <p style={{ ...dc.funFactText, fontWeight: 700, marginBottom: '4px' }}>{t('daily_challenge_fun_fact', lang)}</p>
+              <p style={dc.funFactText}>{challenge.funFact}</p>
+            </div>
           </div>
         </>
       )}
@@ -261,8 +277,8 @@ function ParentHome({ onTabChange, onModeSwitch, onEditName, childName, stars, s
           {MARKET_STATS.map((stat) => (
             <div key={stat.id} className="card" style={{ ...s.statCard, borderTop: `4px solid ${stat.colour}` }}>
               <div style={{ ...s.statValue, color: stat.colour }}>{stat.value}</div>
-              <div style={s.statLabel}>{stat.label}</div>
-              <div style={s.statSub}>{stat.sub}</div>
+              <div style={s.statLabel}>{t('market_stat_' + stat.id + '_label', lang)}</div>
+              <div style={s.statSub}>{t('market_stat_' + stat.id + '_sub', lang)}</div>
             </div>
           ))}
         </div>
@@ -274,9 +290,9 @@ function ParentHome({ onTabChange, onModeSwitch, onEditName, childName, stars, s
         <div style={s.gapsGrid}>
           {MARKET_GAPS.map((gap) => (
             <div key={gap.id} className="card" style={{ ...s.gapCard, borderLeft: `4px solid ${gap.colour}` }}>
-              <span style={{ ...s.gapTag, background: gap.colour }}>{gap.tag}</span>
-              <h4 style={s.gapTitle}>{gap.title}</h4>
-              <p style={s.gapDesc}>{gap.desc}</p>
+              <span style={{ ...s.gapTag, background: gap.colour }}>{t('market_gap_' + gap.id + '_tag', lang)}</span>
+              <h4 style={s.gapTitle}>{t('market_gap_' + gap.id + '_title', lang)}</h4>
+              <p style={s.gapDesc}>{t('market_gap_' + gap.id + '_desc', lang)}</p>
             </div>
           ))}
         </div>
