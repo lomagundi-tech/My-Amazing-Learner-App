@@ -1,21 +1,16 @@
-import { useState } from 'react'
-import { sendMessage } from '../utils/api'
+import { useEffect, useState } from 'react'
 
-export function useChat(childName, mode) {
-  const isChild = mode === 'child'
-
-  const greeting = isChild
-    ? childName
-      ? `Hi ${childName}! 🔮 I'm Sparky, your Amazing Learning helper! Ask me anything — maths, reading, spelling, or anything you're curious about. What would you like to explore today?`
-      : `Hi there! 🔮 I'm Sparky, your Amazing Learning helper! Ask me anything — maths, reading, spelling, or anything you're curious about. What would you like to explore today?`
-    : childName
-      ? `Hi! 🔮 I'm Sparky, your Amazing Learning assistant. I'm here to help support ${childName}'s learning journey. Ask me anything — curriculum questions, SEN advice, activity ideas, or how ${childName} is getting on. What would you like to explore today?`
-      : `Hi! 🔮 I'm Sparky, your Amazing Learning assistant. Ask me anything — curriculum questions, SEN advice, activity ideas, or how your child is getting on. What would you like to explore today?`
-
-  const [messages, setMessages] = useState([{ role: 'assistant', content: greeting }])
+export function useChat(childName, mode, lang = 'en', openingMessage, errorMessage) {
+  const openingContent = openingMessage?.content || ''
+  const [messages, setMessages] = useState([{ role: 'assistant', content: openingContent }])
   const [input, setInput]       = useState('')
   const [loading, setLoading]   = useState(false)
   const [error, setError]       = useState(null)
+
+  useEffect(() => {
+    setMessages([{ role: 'assistant', content: openingContent }])
+    setError(null)
+  }, [openingContent])
 
   async function sendChat(text, mode) {
     if (!text.trim()) return
@@ -33,17 +28,24 @@ export function useChat(childName, mode) {
         .slice(1) // skip opening assistant message
         .map(({ role, content }) => ({ role, content }))
 
-      const reply = await sendMessage(apiMessages, mode, childName)
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: apiMessages, mode, childName, lang }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Something went wrong')
+      const reply = data.content
       setMessages([...updated, { role: 'assistant', content: reply }])
     } catch (err) {
-      setError("Sparky is having a nap! Try again in a moment. 😴")
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
   }
 
   function clearChat() {
-    setMessages([{ role: 'assistant', content: greeting }])
+    setMessages([{ role: 'assistant', content: openingContent }])
     setError(null)
   }
 

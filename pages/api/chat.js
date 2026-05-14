@@ -15,6 +15,25 @@ const SYSTEM_PROMPTS = {
   child: `You are Sparky, a super friendly learning buddy for children aged 3-11. Use simple, encouraging language. Give short, fun answers. Use emojis! Help with reading, maths, spelling, and creative activities. Be encouraging, never make the child feel bad for wrong answers. Celebrate learning!`,
 }
 
+const LANG_NAMES = {
+  en: 'English',
+  cy: 'Welsh',
+  pl: 'Polish',
+  ur: 'Urdu',
+  bn: 'Bengali',
+  pa: 'Punjabi',
+  gu: 'Gujarati',
+  hi: 'Hindi',
+  ar: 'Arabic',
+  fr: 'French',
+  es: 'Spanish',
+  pt: 'Portuguese',
+  ro: 'Romanian',
+  zh: 'Mandarin Chinese',
+  tr: 'Turkish',
+  so: 'Somali',
+}
+
 // In-memory rate limiter (resets on cold start — fine for MVP)
 const rateLimitMap = new Map()
 
@@ -61,7 +80,7 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: 'Sparky is having a nap! Try again in a moment. 😴' })
   }
 
-  const { messages, mode, childName } = req.body
+  const { messages, mode, childName, lang } = req.body
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: 'Invalid request.' })
   }
@@ -70,6 +89,10 @@ export default async function handler(req, res) {
   let systemPrompt = SYSTEM_PROMPTS[mode] ?? SYSTEM_PROMPTS.child
   if (childName && typeof childName === 'string' && childName.trim().length <= 20) {
     systemPrompt += ` The child's name is ${childName.trim()}. Always address them by name.`
+  }
+  const langName = LANG_NAMES[lang] || 'English'
+  if (lang && lang !== 'en') {
+    systemPrompt += ` IMPORTANT: The user's selected language is ${langName}. Always respond in ${langName}, regardless of what language the user writes in. Keep your entire response in ${langName}.`
   }
 
   try {

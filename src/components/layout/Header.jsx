@@ -1,6 +1,7 @@
 import ModeToggle from './ModeToggle'
+import LanguageSwitcher from '../LanguageSwitcher'
 
-export default function Header({ mode, onToggle, streak }) {
+export default function Header({ mode, onToggle, streak, lang, onLangChange }) {
   return (
     <header style={styles.header}>
       <div className="container" style={styles.inner}>
@@ -15,7 +16,8 @@ export default function Header({ mode, onToggle, streak }) {
               <span style={styles.streakNum}>{streak}</span>
             </div>
           )}
-          <ModeToggle mode={mode} onToggle={onToggle} />
+          <LanguageSwitcher lang={lang} onLangChange={onLangChange} />
+          <ModeToggle mode={mode} onToggle={onToggle} lang={lang} />
         </div>
       </div>
     </header>

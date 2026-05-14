@@ -1,4 +1,6 @@
-export default function Hero({ mode }) {
+import { t } from '../../utils/i18n'
+
+export default function Hero({ mode, lang = 'en' }) {
   const isChild = mode === 'child'
 
   return (
@@ -18,13 +20,13 @@ export default function Hero({ mode }) {
         <div>
           <h1 style={styles.headline}>
             {isChild
-              ? 'Time to be an Amazing Learner! 🚀'
-              : 'Inspire, Track & Empower Every Learner'}
+              ? t('hero_child_headline', lang)
+              : t('hero_parent_headline', lang)}
           </h1>
           <p style={styles.sub}>
             {isChild
-              ? 'Let\'s learn something amazing today! 🚀'
-              : 'The AI-powered companion to your My Amazing Learner resources.'}
+              ? t('hero_child_sub', lang)
+              : t('hero_parent_sub', lang)}
           </p>
         </div>
       </div>

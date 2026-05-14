@@ -19,6 +19,7 @@ import FloatingSENButton from '../src/components/FloatingSENButton'
 
 import {
   getMode, setMode as saveMode,
+  getLanguage, setLanguage as saveLanguage,
   getChildName,
   getStars, getBadges,
   updateStreak, getStreak,
@@ -26,6 +27,7 @@ import {
   setLastVisit,
   getDeviceId,
 } from '../src/utils/storage'
+import { LANGUAGES } from '../src/data/translations'
 
 export default function App() {
   const [mode, setMode]         = useState('parent')
@@ -38,6 +40,7 @@ export default function App() {
   const [showNameModal, setShowNameModal] = useState(false)
   const [hydrated, setHydrated] = useState(false)
   const [deviceId, setDeviceId] = useState('')
+  const [lang, setLang] = useState('en')
 
   // Hydrate from localStorage on mount (client-side only)
   useEffect(() => {
@@ -46,6 +49,8 @@ export default function App() {
     const savedStars = getStars()
     const savedBadges = getBadges()
     const currentStreak = updateStreak()
+    const savedLang = getLanguage()
+    const savedLangData = LANGUAGES.find((l) => l.code === savedLang)
 
     // Streak milestone badge awards (check each time streak updates on load)
     if (currentStreak >= 7)  earnBadge('week_warrior')
@@ -58,6 +63,9 @@ export default function App() {
     setBadges(getBadges()) // re-read after potential badge awards
     setStreak(currentStreak)
     setDeviceId(getDeviceId())
+    setLang(savedLang)
+    document.documentElement.dir = savedLangData?.dir || 'ltr'
+    document.documentElement.lang = savedLang
     setLastVisit()
 
     if (!savedName) setShowNameModal(true)
@@ -67,6 +75,14 @@ export default function App() {
   function handleModeToggle(newMode) {
     setMode(newMode)
     saveMode(newMode)
+  }
+
+  function handleLangChange(code) {
+    setLang(code)
+    saveLanguage(code)
+    const langData = LANGUAGES.find((l) => l.code === code)
+    document.documentElement.dir = langData?.dir || 'ltr'
+    document.documentElement.lang = code
   }
 
   function handleTabChange(tabIndex) {
@@ -88,17 +104,17 @@ export default function App() {
   const sharedProps = { mode, onTabChange: handleTabChange }
 
   const panels = [
-    <HomePanel      key={panelKey} {...sharedProps} onModeSwitch={handleModeToggle} onEditName={() => setShowNameModal(true)} childName={childName} stars={stars} streak={streak} onStarsChange={refreshStars} />,
-    <AITutor        key={panelKey} {...sharedProps} childName={childName} />,
+    <HomePanel      key={panelKey} {...sharedProps} lang={lang} onModeSwitch={handleModeToggle} onEditName={() => setShowNameModal(true)} childName={childName} stars={stars} streak={streak} onStarsChange={refreshStars} />,
+    <AITutor        key={panelKey} {...sharedProps} lang={lang} childName={childName} />,
     mode === 'parent'
-      ? <ParentActivitiesPanel key={panelKey} childName={childName} />
-      : <QuizPanel key={panelKey} {...sharedProps} onStarsChange={refreshStars} onBadgesChange={refreshBadges} />,
-    <ProgressPanel  key={panelKey} {...sharedProps} childName={childName} stars={stars} />,
-    <CraftsPanel    key={panelKey} {...sharedProps} onBadgesChange={refreshBadges} />,
-    <RewardsPanel   key={panelKey} {...sharedProps} stars={stars} badges={badges} />,
-    <SENPanel         key={panelKey} {...sharedProps} />,
-    <AdventurePanel   key={panelKey} childName={childName} deviceId={deviceId} onStarsChange={refreshStars} onBadgesChange={refreshBadges} />,
-    <MyAreaPanel      key={panelKey} childName={childName} onStarsChange={refreshStars} onBadgesChange={refreshBadges} />,
+      ? <ParentActivitiesPanel key={panelKey} lang={lang} childName={childName} />
+      : <QuizPanel key={panelKey} {...sharedProps} lang={lang} onStarsChange={refreshStars} onBadgesChange={refreshBadges} />,
+    <ProgressPanel  key={panelKey} {...sharedProps} lang={lang} childName={childName} stars={stars} />,
+    <CraftsPanel    key={panelKey} {...sharedProps} lang={lang} onBadgesChange={refreshBadges} />,
+    <RewardsPanel   key={panelKey} {...sharedProps} lang={lang} stars={stars} badges={badges} />,
+    <SENPanel         key={panelKey} {...sharedProps} lang={lang} />,
+    <AdventurePanel   key={panelKey} lang={lang} childName={childName} deviceId={deviceId} onStarsChange={refreshStars} onBadgesChange={refreshBadges} />,
+    <MyAreaPanel      key={panelKey} lang={lang} childName={childName} onStarsChange={refreshStars} onBadgesChange={refreshBadges} />,
   ]
 
   return (
@@ -127,9 +143,15 @@ export default function App() {
       {showNameModal && <NameModal onSave={handleNameSave} />}
 
       <div className="no-print">
-        <Header mode={mode} onToggle={handleModeToggle} streak={streak} />
-        <TabNav activeTab={activeTab} onTabChange={handleTabChange} mode={mode} />
-        <Hero mode={mode} />
+        <Header
+          mode={mode}
+          onToggle={handleModeToggle}
+          streak={streak}
+          lang={lang}
+          onLangChange={handleLangChange}
+        />
+        <TabNav activeTab={activeTab} onTabChange={handleTabChange} mode={mode} lang={lang} />
+        <Hero mode={mode} lang={lang} />
       </div>
 
       <main>

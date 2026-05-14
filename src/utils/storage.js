@@ -26,6 +26,8 @@ const KEYS = {
   deviceId:            'mal_device_id',
   trailProgress:       'mal_trail_progress',
   trailSyncedData:     'mal_trail_synced_data',
+  // Language preference
+  language:            'mal_language',
   // Phase 4 — My Area
   myAreaCoords:        'mal_myarea_coords',
   myAreaEnabled:       'mal_myarea_enabled',
@@ -79,6 +81,9 @@ export function setChildName(name)   { set(KEYS.childName, name) }
 
 export function getMode()            { return get(KEYS.mode, 'parent') }
 export function setMode(mode)        { set(KEYS.mode, mode) }
+
+export function getLanguage()        { return get(KEYS.language, 'en') }
+export function setLanguage(code)    { set(KEYS.language, code) }
 
 export function getStreak()          { return get(KEYS.streak, 0) }
 export function getStreakDate()      { return get(KEYS.streakDate, null) }

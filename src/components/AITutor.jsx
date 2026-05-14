@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useChat } from '../hooks/useChat'
+import { t } from '../utils/i18n'
 
 const PARENT_CHIPS = [
   'How do I support SEN readers?',
@@ -7,8 +8,12 @@ const PARENT_CHIPS = [
   'Recommend an activity for age 5',
 ]
 
-export default function AITutor({ mode, childName }) {
-  const { messages, input, setInput, loading, error, sendChat } = useChat(childName, mode)
+export default function AITutor({ mode, childName, lang = 'en' }) {
+  const OPENING_MESSAGE = {
+    role: 'assistant',
+    content: t('ai_greeting', lang),
+  }
+  const { messages, input, setInput, loading, error, sendChat } = useChat(childName, mode, lang, OPENING_MESSAGE, t('ai_error', lang))
   const bottomRef = useRef(null)
 
   useEffect(() => {
@@ -32,7 +37,7 @@ export default function AITutor({ mode, childName }) {
         <div>
           <h2 style={styles.name}>Sparky</h2>
           <p style={styles.tagline}>
-            {mode === 'child' ? 'Your learning buddy!' : 'AI Education Assistant'}
+            {mode === 'child' ? t('ai_tagline_child', lang) : t('ai_tagline_parent', lang)}
           </p>
         </div>
       </div>
@@ -59,6 +64,7 @@ export default function AITutor({ mode, childName }) {
 
         {loading && (
           <div style={{ ...styles.bubble, alignSelf: 'flex-start', background: '#f4f0fa' }}>
+            <span style={styles.thinkingText}>{t('ai_thinking', lang)}</span>
             <span style={styles.dot} />
             <span style={{ ...styles.dot, animationDelay: '0.2s' }} />
             <span style={{ ...styles.dot, animationDelay: '0.4s' }} />
@@ -90,7 +96,7 @@ export default function AITutor({ mode, childName }) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={mode === 'child' ? 'Ask Sparky anything! 🔮' : 'Ask about your child\'s learning…'}
+          placeholder={t('ai_placeholder', lang)}
           style={styles.input}
           disabled={loading}
           aria-label="Message input"
@@ -105,7 +111,7 @@ export default function AITutor({ mode, childName }) {
           }}
           aria-label="Send message"
         >
-          ➤
+          {t('ai_send', lang)}
         </button>
       </form>
     </div>
@@ -141,6 +147,9 @@ const styles = {
     background: 'var(--violet)', borderRadius: '50%',
     animation: 'typingBounce 1.2s ease-in-out infinite',
   },
+  thinkingText: {
+    marginRight: '6px',
+  },
   chips: { display: 'flex', gap: '8px', flexWrap: 'wrap' },
   chip: {
     padding: '8px 16px', borderRadius: 'var(--radius-pill)',
@@ -157,8 +166,9 @@ const styles = {
     background: '#fff',
   },
   sendBtn: {
-    width: '52px', height: '52px', borderRadius: '50%',
-    border: 'none', color: '#fff', fontSize: '1.1rem',
+    minWidth: '84px', height: '52px', borderRadius: 'var(--radius-pill)',
+    border: 'none', color: '#fff', fontSize: '0.95rem', fontWeight: 800,
+    padding: '0 18px',
     cursor: 'pointer', flexShrink: 0, transition: 'opacity 0.2s ease',
   },
 }

@@ -1,16 +1,18 @@
+import { t } from '../../utils/i18n'
+
 const TABS = [
-  { id: 0, label: 'Home',       emoji: '🌻' },
-  { id: 1, label: 'AI Tutor',   emoji: '🔮' },
-  { id: 2, label: 'Activities', emoji: '🧩' },
-  { id: 3, label: 'Progress',   emoji: '🌱' },
-  { id: 4, label: 'Crafts',     emoji: '🪡' },
-  { id: 5, label: 'Rewards',    emoji: '🎖️' },
-  { id: 6, label: 'SEN Tools',  emoji: '🌈' },
-  { id: 7, label: 'Adventures', emoji: '🗺️' },
-  { id: 8, label: 'My Area',    emoji: '📍' },
+  { id: 0, key: 'tab_home',       emoji: '🌻' },
+  { id: 1, key: 'tab_ai_tutor',   emoji: '🔮' },
+  { id: 2, key: 'tab_activities', emoji: '🧩' },
+  { id: 3, key: 'tab_progress',   emoji: '🌱' },
+  { id: 4, key: 'tab_crafts',     emoji: '🪡' },
+  { id: 5, key: 'tab_rewards',    emoji: '🎖️' },
+  { id: 6, key: 'tab_sen',        emoji: '🌈' },
+  { id: 7, key: 'tab_adventures', emoji: '🗺️' },
+  { id: 8, key: 'tab_my_area',    emoji: '📍' },
 ]
 
-export default function TabNav({ activeTab, onTabChange, mode }) {
+export default function TabNav({ activeTab, onTabChange, mode, lang = 'en' }) {
   const activeColor = mode === 'child' ? 'var(--coral)' : 'var(--plum)'
 
   return (
@@ -32,7 +34,7 @@ export default function TabNav({ activeTab, onTabChange, mode }) {
               }}
             >
               <span aria-hidden="true" style={styles.emoji}>{tab.emoji}</span>
-              <span>{tab.label}</span>
+              <span>{t(tab.key, lang)}</span>
             </button>
           )
         })}

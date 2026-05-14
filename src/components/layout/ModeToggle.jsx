@@ -1,6 +1,8 @@
-export default function ModeToggle({ mode, onToggle }) {
+import { t } from '../../utils/i18n'
+
+export default function ModeToggle({ mode, onToggle, lang = 'en' }) {
   return (
-    <div style={styles.wrapper} role="group" aria-label="Switch between Parent and Child mode">
+    <div style={styles.wrapper} role="group" aria-label={`Switch between ${t('mode_parent', lang)} and ${t('mode_child', lang)} mode`}>
       <button
         onClick={() => onToggle('parent')}
         aria-pressed={mode === 'parent'}
@@ -11,7 +13,7 @@ export default function ModeToggle({ mode, onToggle }) {
           fontWeight: mode === 'parent' ? 700 : 600,
         }}
       >
-        <span aria-hidden="true">🦉</span> Parent
+        <span aria-hidden="true">🦉</span> {t('mode_parent', lang)}
       </button>
       <button
         onClick={() => onToggle('child')}
@@ -23,7 +25,7 @@ export default function ModeToggle({ mode, onToggle }) {
           fontWeight: mode === 'child' ? 700 : 600,
         }}
       >
-        <span aria-hidden="true">🦋</span> Child
+        <span aria-hidden="true">🦋</span> {t('mode_child', lang)}
       </button>
     </div>
   )
