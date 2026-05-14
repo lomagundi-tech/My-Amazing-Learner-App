@@ -90,7 +90,7 @@ export default function QuizPanel({ mode, onStarsChange, onBadgesChange, lang = 
         <div style={styles.questionCard} key={current?.id}>
           <div style={styles.questionMeta}>
             <span style={styles.subjectPill}>
-              {SUBJECTS.find((s) => s.id === current?.subject)?.emoji} {current?.subject}
+              {SUBJECTS.find((s) => s.id === current?.subject)?.emoji} {t('quiz_subject_' + current?.subject, lang)}
             </span>
           </div>
           <p style={styles.questionText}>{current?.q}</p>

@@ -41,13 +41,13 @@ function TierBanner({ stats, lang = 'en' }) {
         </div>
         <div>
           <div style={st.tierLabel}>{tier.label}</div>
-          <div style={st.tierSub}>{stats.total} activities this month</div>
+          <div style={st.tierSub}>{t('tier_activities_month', lang).replace('{n}', stats.total)}</div>
         </div>
       </div>
       <div style={st.tierRight}>
         {tierIndex < 4 && (
           <>
-            <div style={st.tierNextLabel}>Next: {nextTier.label}</div>
+            <div style={st.tierNextLabel}>{t('tier_next_label', lang)} {nextTier.label}</div>
             <div style={st.tierTrack}>
               <div style={{ ...st.tierFill, width: `${Math.min(progress, 100)}%`, background: tier.colour }} />
             </div>
@@ -92,7 +92,7 @@ function QuizModal({ activity, questions, onClose, onComplete, lang = 'en' }) {
         {!done ? (
           <>
             <div style={st.quizProgress}>
-              Question {current + 1} of {total}
+              {t('quiz_modal_progress', lang).replace('{n}', current + 1).replace('{total}', total)}
               <div style={st.quizProgressTrack}>
                 <div style={{ ...st.quizProgressFill, width: `${((current + 1) / total) * 100}%` }} />
               </div>
@@ -116,7 +116,7 @@ function QuizModal({ activity, questions, onClose, onComplete, lang = 'en' }) {
             {selected && (
               <div style={{ textAlign: 'center', marginTop: '12px' }}>
                 <div style={{ marginBottom: '8px', fontWeight: 700, color: selected === q.answer ? 'var(--mint)' : 'var(--coral)' }}>
-                  {selected === q.answer ? t('quiz_modal_correct', lang) : `The answer is: ${q.answer}`}
+                  {selected === q.answer ? t('quiz_modal_correct', lang) : t('quiz_modal_wrong', lang).replace('{answer}', q.answer)}
                 </div>
                 <button onClick={handleNext} style={st.nextBtn}>
                   {current + 1 >= total ? t('quiz_modal_see_results', lang) : t('quiz_modal_next', lang)}
@@ -130,7 +130,7 @@ function QuizModal({ activity, questions, onClose, onComplete, lang = 'en' }) {
             <div style={st.resultLabel}>
               {score === total ? t('quiz_modal_perfect', lang) : score >= total * 0.7 ? t('quiz_modal_great', lang) : t('quiz_modal_keep_trying', lang)}
             </div>
-            {activity.reward?.pct > 0 && <div style={st.rewardPill}>You earned {activity.reward.label}!</div>}
+            {activity.reward?.pct > 0 && <div style={st.rewardPill}>{t('quiz_modal_earned', lang).replace('{reward}', activity.reward.label)}</div>}
             <button onClick={() => { onComplete(score, total); onClose() }} style={st.nextBtn}>{t('quiz_modal_claim', lang)}</button>
           </div>
         )}
@@ -180,7 +180,7 @@ function ArticleModal({ activity, onClose, onComplete, lang = 'en' }) {
 
         {stage === 'quiz' && (
           <>
-            <div style={st.quizProgress}>Question {current + 1} of {qs.length}</div>
+            <div style={st.quizProgress}>{t('quiz_modal_progress', lang).replace('{n}', current + 1).replace('{total}', qs.length)}</div>
             <p style={st.questionText}>{q.q}</p>
             <div style={st.optionsGrid}>
               {q.options.map((opt) => {
@@ -194,7 +194,7 @@ function ArticleModal({ activity, onClose, onComplete, lang = 'en' }) {
             </div>
             {selected && (
               <div style={{ textAlign: 'center', marginTop: '12px' }}>
-                <button onClick={handleNext} style={st.nextBtn}>{current + 1 >= qs.length ? 'Finish' : 'Next'}</button>
+                <button onClick={handleNext} style={st.nextBtn}>{current + 1 >= qs.length ? t('article_modal_finish', lang) : t('article_modal_next', lang)}</button>
               </div>
             )}
           </>
@@ -307,16 +307,16 @@ function ConfirmModal({ activity, onClose, onComplete, module, lang = 'en' }) {
         <div style={st.jointChecks}>
           <label style={st.checkRow}>
             <input type="checkbox" checked={parentDone} onChange={(e) => setParentDone(e.target.checked)} style={{ width: '20px', height: '20px' }} />
-            <span>I confirm {activity.childEarns ? `we both completed: ${activity.title}` : `I have completed this activity`}</span>
+            <span>{isJoint ? t('confirm_joint_label', lang).replace('{title}', activity.title) : t('confirm_self_label', lang)}</span>
           </label>
           {isJoint && (
             <label style={st.checkRow}>
               <input type="checkbox" checked={childDone} onChange={(e) => setChildDone(e.target.checked)} style={{ width: '20px', height: '20px' }} />
-              <span>My child has completed their part</span>
+              <span>{t('confirm_child_label', lang)}</span>
             </label>
           )}
           {activity.childEarns && (
-            <div style={st.rewardPill}>Child earns {activity.childEarns} stars &bull; You earn: {activity.parentReward}</div>
+            <div style={st.rewardPill}>{t('reward_pill_both', lang).replace('{n}', activity.childEarns).replace('{reward}', activity.parentReward)}</div>
           )}
         </div>
 
@@ -363,13 +363,13 @@ function StepsModal({ activity, onClose, onComplete, lang = 'en' }) {
         </div>
         <label style={{ ...st.checkRow, marginTop: '16px' }}>
           <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} style={{ width: '20px', height: '20px' }} />
-          <span>We both completed this walk together</span>
+          <span>{t('steps_confirm', lang)}</span>
         </label>
-        <div style={st.rewardPill}>Child earns {activity.childEarns} stars &bull; You earn: {activity.parentReward}</div>
+        <div style={st.rewardPill}>{t('reward_pill_both', lang).replace('{n}', activity.childEarns).replace('{reward}', activity.parentReward)}</div>
         <div style={{ textAlign: 'center', marginTop: '16px' }}>
           <button onClick={() => { onComplete(1, 1); onClose() }} disabled={!steps || !confirmed}
             style={{ ...st.nextBtn, opacity: steps && confirmed ? 1 : 0.4 }}>
-            Claim Reward &amp; Close
+            {t('claim_reward_close', lang)}
           </button>
         </div>
       </div>
@@ -398,7 +398,7 @@ function ChecklistModal({ activity, onClose, onComplete, lang = 'en' }) {
         <div style={st.progressBar}>
           <div style={{ ...st.progressFill, width: `${(tickedCount / SCAVENGER_CHECKLIST.length) * 100}%` }} />
         </div>
-        <p style={{ fontSize: '0.78rem', color: 'var(--text-mid)', marginBottom: '12px' }}>{tickedCount} of {SCAVENGER_CHECKLIST.length} found</p>
+        <p style={{ fontSize: '0.78rem', color: 'var(--text-mid)', marginBottom: '12px' }}>{t('checklist_found', lang).replace('{n}', tickedCount).replace('{total}', SCAVENGER_CHECKLIST.length)}</p>
         <div style={st.checklistGrid}>
           {SCAVENGER_CHECKLIST.map((item) => (
             <label key={item} style={{ ...st.checkRow, background: ticked[item] ? '#e8f5e9' : '#f5f0fa', padding: '10px 14px', borderRadius: '10px', cursor: 'pointer' }}>
@@ -407,7 +407,7 @@ function ChecklistModal({ activity, onClose, onComplete, lang = 'en' }) {
             </label>
           ))}
         </div>
-        {allDone && <div style={st.rewardPill}>Child earns {activity.childEarns} stars &bull; You earn: {activity.parentReward}</div>}
+        {allDone && <div style={st.rewardPill}>{t('reward_pill_both', lang).replace('{n}', activity.childEarns).replace('{reward}', activity.parentReward)}</div>}
         <div style={{ textAlign: 'center', marginTop: '16px' }}>
           <button onClick={() => { onComplete(tickedCount, SCAVENGER_CHECKLIST.length); onClose() }} disabled={tickedCount < 4}
             style={{ ...st.nextBtn, opacity: tickedCount >= 4 ? 1 : 0.4 }}>
@@ -443,7 +443,7 @@ function GuidedModal({ activity, onClose, onComplete, lang = 'en' }) {
               <div style={{ ...st.progressFill, width: `${((stepIndex + 1) / MINDFULNESS_STEPS.length) * 100}%` }} />
             </div>
             <div style={st.guidedStepBox}>
-              <div style={st.stepNumber}>Step {step.step} of {MINDFULNESS_STEPS.length}</div>
+              <div style={st.stepNumber}>{t('guided_step_label', lang).replace('{n}', step.step).replace('{total}', MINDFULNESS_STEPS.length)}</div>
               <p style={st.stepInstruction}>{step.instruction}</p>
             </div>
             <div style={{ textAlign: 'center', marginTop: '20px' }}>
@@ -456,8 +456,8 @@ function GuidedModal({ activity, onClose, onComplete, lang = 'en' }) {
           <div style={st.resultsBox}>
             <div style={{ fontSize: '3rem', marginBottom: '8px' }}>🧘</div>
             <div style={st.resultLabel}>{t('guided_modal_result', lang)}</div>
-            <div style={st.rewardPill}>Child earns {activity.childEarns} stars &bull; You earn: {activity.parentReward}</div>
-            <button onClick={() => { onComplete(1, 1); onClose() }} style={st.nextBtn}>Claim Reward &amp; Close</button>
+            <div style={st.rewardPill}>{t('reward_pill_both', lang).replace('{n}', activity.childEarns).replace('{reward}', activity.parentReward)}</div>
+            <button onClick={() => { onComplete(1, 1); onClose() }} style={st.nextBtn}>{t('claim_reward_close', lang)}</button>
           </div>
         )}
       </div>
@@ -469,9 +469,7 @@ function TextModal({ activity, onClose, onComplete, lang = 'en' }) {
   const [text, setText] = useState('')
   const [confirmed, setConfirmed] = useState(false)
 
-  const label = activity.id === 'draw_and_caption'
-    ? 'Describe your child\'s drawing and add a caption:'
-    : 'Describe the kind act your child performed:'
+  const label = t(activity.id === 'draw_and_caption' ? 'text_label_drawing' : 'text_label_kind', lang)
 
   return (
     <div style={st.overlay} onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
@@ -492,13 +490,13 @@ function TextModal({ activity, onClose, onComplete, lang = 'en' }) {
         </div>
         <label style={{ ...st.checkRow, marginTop: '12px' }}>
           <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} style={{ width: '20px', height: '20px' }} />
-          <span>We both confirm this was completed</span>
+          <span>{t('text_confirm', lang)}</span>
         </label>
-        {activity.childEarns && <div style={st.rewardPill}>Child earns {activity.childEarns} stars &bull; You earn: {activity.parentReward}</div>}
+        {activity.childEarns && <div style={st.rewardPill}>{t('reward_pill_both', lang).replace('{n}', activity.childEarns).replace('{reward}', activity.parentReward)}</div>}
         <div style={{ textAlign: 'center', marginTop: '16px' }}>
           <button onClick={() => { onComplete(1, 1); onClose() }} disabled={!text.trim() || !confirmed}
             style={{ ...st.nextBtn, opacity: text.trim() && confirmed ? 1 : 0.4 }}>
-            Claim Reward &amp; Close
+            {t('claim_reward_close', lang)}
           </button>
         </div>
       </div>
@@ -536,14 +534,14 @@ function StoryModal({ activity, onClose, onComplete, lang = 'en' }) {
         ))}
         {allFilled && (
           <div style={st.storyPreview}>
-            <strong>Your story:</strong> Once upon a time, {answers[0] || '...'} lived in {answers[1] || '...'}. One day, they discovered that {answers[2] || '...'}.
+            {t('story_preview_intro', lang)} {answers[0] || '...'} lived in {answers[1] || '...'}. One day, they discovered that {answers[2] || '...'}.
           </div>
         )}
         <label style={{ ...st.checkRow, marginTop: '12px' }}>
           <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} style={{ width: '20px', height: '20px' }} />
-          <span>We created this story together</span>
+          <span>{t('story_confirm', lang)}</span>
         </label>
-        <div style={st.rewardPill}>Child earns {activity.childEarns} stars &bull; You earn: {activity.parentReward}</div>
+        <div style={st.rewardPill}>{t('reward_pill_both', lang).replace('{n}', activity.childEarns).replace('{reward}', activity.parentReward)}</div>
         <div style={{ textAlign: 'center', marginTop: '16px' }}>
           <button onClick={() => { onComplete(1, 1); onClose() }} disabled={!allFilled || !confirmed}
             style={{ ...st.nextBtn, opacity: allFilled && confirmed ? 1 : 0.4 }}>
@@ -569,7 +567,7 @@ function RatingModal({ activity, onClose, onComplete, lang = 'en' }) {
         </div>
         <p style={st.modalBody}>{activity.description}</p>
         <div style={st.inputGroup}>
-          <label style={st.inputLabel}>Your child chose to teach you about:</label>
+          <label style={st.inputLabel}>{t('rating_topic_label', lang)}</label>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {TEACH_TOPICS.map((t) => (
               <button key={t} onClick={() => setTopic(t)}
@@ -592,13 +590,13 @@ function RatingModal({ activity, onClose, onComplete, lang = 'en' }) {
         </div>
         <label style={{ ...st.checkRow, marginTop: '16px' }}>
           <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} style={{ width: '20px', height: '20px' }} />
-          <span>My child taught me about this topic today</span>
+          <span>{t('rating_confirm', lang)}</span>
         </label>
-        <div style={st.rewardPill}>Child earns {activity.childEarns} stars &bull; You earn: {activity.parentReward}</div>
+        <div style={st.rewardPill}>{t('reward_pill_both', lang).replace('{n}', activity.childEarns).replace('{reward}', activity.parentReward)}</div>
         <div style={{ textAlign: 'center', marginTop: '16px' }}>
           <button onClick={() => { onComplete(rating, 5); onClose() }} disabled={!topic || !rating || !confirmed}
             style={{ ...st.nextBtn, opacity: topic && rating && confirmed ? 1 : 0.4 }}>
-            Claim Reward &amp; Close
+            {t('claim_reward_close', lang)}
           </button>
         </div>
       </div>
@@ -624,14 +622,14 @@ function PhrasesModal({ activity, onClose, onComplete, lang = 'en' }) {
         <div style={st.progressBar}>
           <div style={{ ...st.progressFill, width: `${(practisedCount / LANGUAGE_PHRASES.length) * 100}%` }} />
         </div>
-        <p style={{ fontSize: '0.78rem', color: 'var(--text-mid)', marginBottom: '12px' }}>{practisedCount} of {LANGUAGE_PHRASES.length} practised</p>
+        <p style={{ fontSize: '0.78rem', color: 'var(--text-mid)', marginBottom: '12px' }}>{t('phrases_count', lang).replace('{n}', practisedCount).replace('{total}', LANGUAGE_PHRASES.length)}</p>
         {LANGUAGE_PHRASES.map((p) => (
           <div key={p.phrase} style={{ ...st.phraseCard, background: practised[p.phrase] ? '#e8f5e9' : '#f5f0fa', borderColor: practised[p.phrase] ? 'var(--mint)' : 'rgba(107,63,160,0.1)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
                 <div style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--plum)', fontFamily: "'Baloo 2', cursive" }}>{p.phrase}</div>
                 <div style={{ fontSize: '0.85rem', color: 'var(--text-dark)' }}>{p.english}</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-mid)', fontStyle: 'italic' }}>Say it: {p.pronunciation}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-mid)', fontStyle: 'italic' }}>{t('phrases_say_it', lang)} {p.pronunciation}</div>
               </div>
               <button onClick={() => setPractised((prev) => ({ ...prev, [p.phrase]: !prev[p.phrase] }))}
                 style={{ ...st.chip, background: practised[p.phrase] ? 'var(--mint)' : 'var(--violet)', color: '#fff', minWidth: '80px' }}>
@@ -642,13 +640,13 @@ function PhrasesModal({ activity, onClose, onComplete, lang = 'en' }) {
         ))}
         <label style={{ ...st.checkRow, marginTop: '12px' }}>
           <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} style={{ width: '20px', height: '20px' }} />
-          <span>We both practised these phrases together</span>
+          <span>{t('phrases_confirm', lang)}</span>
         </label>
-        {allPractised && <div style={st.rewardPill}>Child earns {activity.childEarns} stars &bull; You earn: {activity.parentReward}</div>}
+        {allPractised && <div style={st.rewardPill}>{t('reward_pill_both', lang).replace('{n}', activity.childEarns).replace('{reward}', activity.parentReward)}</div>}
         <div style={{ textAlign: 'center', marginTop: '16px' }}>
           <button onClick={() => { onComplete(practisedCount, LANGUAGE_PHRASES.length); onClose() }} disabled={!confirmed || practisedCount < 3}
             style={{ ...st.nextBtn, opacity: confirmed && practisedCount >= 3 ? 1 : 0.4 }}>
-            Claim Reward &amp; Close
+            {t('claim_reward_close', lang)}
           </button>
         </div>
       </div>
@@ -681,7 +679,7 @@ function MysteryModal({ activity, onClose, onComplete, lang = 'en' }) {
         ))}
 
         {clueIndex < HISTORY_MYSTERY.clues.length - 1 && (
-          <button onClick={() => setClueIndex((i) => i + 1)} style={{ ...st.nextBtn, marginTop: '12px' }}>Next Clue →</button>
+          <button onClick={() => setClueIndex((i) => i + 1)} style={{ ...st.nextBtn, marginTop: '12px' }}>{t('mystery_next_clue', lang)}</button>
         )}
 
         {clueIndex === HISTORY_MYSTERY.clues.length - 1 && !revealed && (
@@ -699,13 +697,13 @@ function MysteryModal({ activity, onClose, onComplete, lang = 'en' }) {
             </div>
             <label style={{ ...st.checkRow, marginTop: '12px' }}>
               <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} style={{ width: '20px', height: '20px' }} />
-              <span>We solved this mystery together</span>
+              <span>{t('mystery_confirm', lang)}</span>
             </label>
-            <div style={st.rewardPill}>Child earns {activity.childEarns} stars &bull; You earn: {activity.parentReward}</div>
+            <div style={st.rewardPill}>{t('reward_pill_both', lang).replace('{n}', activity.childEarns).replace('{reward}', activity.parentReward)}</div>
             <div style={{ textAlign: 'center', marginTop: '12px' }}>
               <button onClick={() => { onComplete(1, 1); onClose() }} disabled={!confirmed}
                 style={{ ...st.nextBtn, opacity: confirmed ? 1 : 0.4 }}>
-                Claim Reward &amp; Close
+                {t('claim_reward_close', lang)}
               </button>
             </div>
           </div>
@@ -729,7 +727,7 @@ function VoucherWallet({ vouchers, lang = 'en' }) {
 
   return (
     <div style={st.walletSection}>
-      <h3 style={st.sectionTitle}>{t('wallet_title', lang)} ({vouchers.length} active)</h3>
+      <h3 style={st.sectionTitle}>{t('wallet_title', lang)} ({t('wallet_active_count', lang).replace('{n}', vouchers.length)})</h3>
       <p style={st.walletNote}>{t('wallet_note', lang)}</p>
       <div style={st.voucherGrid}>
         {vouchers.map((v) => {
@@ -738,7 +736,7 @@ function VoucherWallet({ vouchers, lang = 'en' }) {
             <div key={v.id} style={st.voucherCard}>
               <div style={st.voucherPct}>{v.pct}{t('wallet_off', lang)}</div>
               <div style={st.voucherCode}>{v.code}</div>
-              <div style={st.voucherExpiry}>Expires in {expiresIn} day{expiresIn !== 1 ? 's' : ''}</div>
+              <div style={st.voucherExpiry}>{t(expiresIn === 1 ? 'wallet_expires_day' : 'wallet_expires_days', lang).replace('{n}', expiresIn)}</div>
               <button onClick={() => copyCode(v)} style={st.voucherBtn}>
                 {copied === v.id ? t('wallet_copied', lang) : t('wallet_copy', lang)}
               </button>
@@ -757,13 +755,13 @@ function CapMeter({ lang = 'en' }) {
   return (
     <div style={st.capMeter}>
       <div style={st.capRow}>
-        <span style={st.capLabel}>Solo activities (Module A): {cap.soloTotal}% of 30% used</span>
+        <span style={st.capLabel}>{t('cap_solo_label', lang).replace('{n}', cap.soloTotal)}</span>
         <div style={st.capTrack}>
           <div style={{ ...st.capFill, width: `${Math.min((cap.soloTotal / 30) * 100, 100)}%`, background: cap.soloTotal >= 30 ? 'var(--coral)' : 'var(--mint)' }} />
         </div>
       </div>
       <div style={st.capRow}>
-        <span style={st.capLabel}>Combined (A + B): {cap.combinedTotal}% of 40% used</span>
+        <span style={st.capLabel}>{t('cap_combined_label', lang).replace('{n}', cap.combinedTotal)}</span>
         <div style={st.capTrack}>
           <div style={{ ...st.capFill, width: `${Math.min((cap.combinedTotal / 40) * 100, 100)}%`, background: cap.combinedTotal >= 40 ? 'var(--coral)' : 'var(--violet)' }} />
         </div>
@@ -813,9 +811,9 @@ function ActivityCard({ activity, module, onOpen, doneToday, jointSession, lang 
       </div>
       {isJoint && (
         <div style={st.jointIndicator}>
-          <span style={{ color: jointSession?.parentDone ? 'var(--mint)' : 'var(--text-mid)' }}>Parent {jointSession?.parentDone ? '✓' : '○'}</span>
+          <span style={{ color: jointSession?.parentDone ? 'var(--mint)' : 'var(--text-mid)' }}>{t('joint_parent_label', lang)} {jointSession?.parentDone ? '✓' : '○'}</span>
           <span style={{ color: 'var(--text-mid)', margin: '0 4px' }}>+</span>
-          <span style={{ color: jointSession?.childDone ? 'var(--mint)' : 'var(--text-mid)' }}>Child {jointSession?.childDone ? '✓' : '○'}</span>
+          <span style={{ color: jointSession?.childDone ? 'var(--mint)' : 'var(--text-mid)' }}>{t('joint_child_label', lang)} {jointSession?.childDone ? '✓' : '○'}</span>
         </div>
       )}
     </button>
@@ -824,13 +822,6 @@ function ActivityCard({ activity, module, onOpen, doneToday, jointSession, lang 
 
 // ── Main panel ─────────────────────────────────────────────────
 // ── Child Quiz Snapshot ────────────────────────────────────────
-const HELP_TIPS = {
-  maths:   'Try counting objects around the house together — small steps build big confidence!',
-  english: 'Reading aloud together for just 10 minutes a day makes a huge difference.',
-  science: 'Science questions come alive when you explore simple experiments at home!',
-  general: 'Exploring the world through books, maps, or documentaries boosts general knowledge fast.',
-}
-
 function ChildQuizSnapshot({ childName, lang = 'en' }) {
   const subjectProgress = getSubjectProgress()
   const totalCorrect    = getCorrectCount()
@@ -870,9 +861,9 @@ function ChildQuizSnapshot({ childName, lang = 'en' }) {
         <>
           <div style={snap.statsRow}>
             {[
-              { label: 'Stars',      value: stars,        emoji: '⭐', bg: '#FFB347' },
-              { label: 'Correct',    value: totalCorrect, emoji: '✅', bg: '#4ECDC4' },
-              { label: 'Day Streak', value: streak,       emoji: '🔥', bg: '#6B3FA0' },
+              { label: t('snapshot_stars_label', lang),   value: stars,        emoji: '⭐', bg: '#FFB347' },
+              { label: t('snapshot_correct_label', lang), value: totalCorrect, emoji: '✅', bg: '#4ECDC4' },
+              { label: t('snapshot_streak_label', lang),  value: streak,       emoji: '🔥', bg: '#6B3FA0' },
             ].map((s) => (
               <div key={s.label} style={{ ...snap.statPill, background: s.bg }}>
                 <span style={snap.statEmoji} aria-hidden="true">{s.emoji}</span>
@@ -924,8 +915,8 @@ function ChildQuizSnapshot({ childName, lang = 'en' }) {
             <div style={snap.tip}>
               <span style={snap.tipIcon} aria-hidden="true">💡</span>
               <p style={snap.tipText}>
-                <strong>{weakest.emoji} {weakest.label}</strong> has the fewest correct answers.{' '}
-                {HELP_TIPS[weakest.id]}
+                <strong>{weakest.emoji} {t('quiz_subject_' + weakest.id, lang)}</strong> {t('snapshot_weakest_suffix', lang)}{' '}
+                {t('snapshot_help_' + (weakest.id === 'general_knowledge' ? 'general' : weakest.id), lang)}
               </p>
             </div>
           )}
@@ -1126,7 +1117,7 @@ export default function ParentActivitiesPanel({ childName, lang = 'en' }) {
 
       <div style={st.header}>
         <h2 style={st.title}>
-          {t('parent_act_title', lang)}{childName ? ` - supporting ${childName}` : ''}
+          {t('parent_act_title', lang)}{childName ? ` - ${t('parent_act_supporting', lang).replace('{name}', childName)}` : ''}
         </h2>
         <p style={st.subtitle}>
           {t('parent_act_subtitle', lang)}
@@ -1168,10 +1159,10 @@ export default function ParentActivitiesPanel({ childName, lang = 'en' }) {
 
       {/* Module description */}
       <div style={st.moduleDesc}>
-        {activeModule === 'A' && <p>Complete these solo activities to better support your child — and earn discounts along the way. <em>30% monthly cap applies.</em></p>}
-        {activeModule === 'B' && <p>Do these activities <strong>together with {childName || 'your child'}</strong>. Both must confirm to unlock rewards for both of you. <em>40% combined monthly cap applies.</em></p>}
-        {activeModule === 'C' && <p>Help your child build real-world habits. Tick the checkbox to confirm each challenge — your word is enough for the soft launch.</p>}
-        {activeModule === 'D' && <p>Extended activities across Wellbeing, Creative, Values, and Cultural categories. Labelled <em>&lsquo;New this week&rsquo;</em> — rotated monthly to keep things fresh.</p>}
+        {activeModule === 'A' && <p>{t('module_desc_a', lang)}</p>}
+        {activeModule === 'B' && <p>{t('module_desc_b', lang).replace('{name}', childName || 'your child')}</p>}
+        {activeModule === 'C' && <p>{t('module_desc_c', lang)}</p>}
+        {activeModule === 'D' && <p>{t('module_desc_d', lang)}</p>}
       </div>
 
       {/* Activity grid */}

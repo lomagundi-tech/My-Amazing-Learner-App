@@ -2,13 +2,12 @@ import { useEffect, useRef } from 'react'
 import { useChat } from '../hooks/useChat'
 import { t } from '../utils/i18n'
 
-const PARENT_CHIPS = [
-  'How do I support SEN readers?',
-  'What KS2 maths topics are hardest?',
-  'Recommend an activity for age 5',
-]
-
 export default function AITutor({ mode, childName, lang = 'en' }) {
+  const PARENT_CHIPS = [
+    t('ai_chip_1', lang),
+    t('ai_chip_2', lang),
+    t('ai_chip_3', lang),
+  ]
   const OPENING_MESSAGE = {
     role: 'assistant',
     content: t('ai_greeting', lang),

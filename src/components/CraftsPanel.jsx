@@ -4,15 +4,6 @@ import { getCraftsCompleted, toggleCraft, earnBadge } from '../utils/storage'
 import { launchConfetti } from '../utils/confetti'
 import { t } from '../utils/i18n'
 
-const CRAFT_KEY_MAP = {
-  1: 'pompom',
-  2: 'velcro',
-  3: 'tracing',
-  4: 'namewriting',
-  5: 'sentence',
-  6: 'timestable',
-}
-
 export default function CraftsPanel({ mode, onBadgesChange, lang = 'en' }) {
   const [completed, setCompleted] = useState(() => getCraftsCompleted())
   const isChild = mode === 'child'
@@ -63,8 +54,8 @@ export default function CraftsPanel({ mode, onBadgesChange, lang = 'en' }) {
             >
               {isDone && <div style={styles.doneOverlay}>{t('craft_done_overlay', lang)}</div>}
               <div style={styles.cardAge}>{craft.ages}</div>
-              <h3 style={styles.cardTitle}>{t(`craft_${CRAFT_KEY_MAP[craft.id]}_title`, lang)}</h3>
-              <p style={styles.cardDesc}>{t(`craft_${CRAFT_KEY_MAP[craft.id]}_desc`, lang)}</p>
+              <h3 style={styles.cardTitle}>{t(`craft_${craft.id}_title`, lang)}</h3>
+              <p style={styles.cardDesc}>{t(`craft_${craft.id}_desc`, lang)}</p>
               <div style={styles.cardActions}>
                 <a
                   href={craft.url}

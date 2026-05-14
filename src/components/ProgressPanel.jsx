@@ -17,15 +17,6 @@ const STRENGTH_KEYS = {
   science: 'progress_strength_science',
 }
 
-const CRAFT_KEY_MAP = {
-  1: 'pompom',
-  2: 'velcro',
-  3: 'tracing',
-  4: 'namewriting',
-  5: 'sentence',
-  6: 'timestable',
-}
-
 const BADGE_KEY_MAP = {
   explorer_full: 'full_explorer',
 }
@@ -150,7 +141,7 @@ export default function ProgressPanel({ mode, stars, childName, lang = 'en' }) {
           <div key={area.id} style={styles.barRow}>
             <div style={styles.barLabel}>
               <span aria-hidden="true">{area.emoji}</span>
-              <span style={styles.barName}>{area.label}</span>
+              <span style={styles.barName}>{t('progress_area_' + area.id, lang)}</span>
               {!isChild && <span style={styles.barPct}>{area.pct}%</span>}
             </div>
             <div style={styles.barTrack}>
@@ -251,7 +242,7 @@ export default function ProgressPanel({ mode, stars, childName, lang = 'en' }) {
                 {progressAreas.map((area) => (
                   <div key={area.id} style={pr.barRow}>
                     <div style={pr.barMeta}>
-                      <span style={pr.barLabel}>{area.emoji} {area.label}</span>
+                      <span style={pr.barLabel}>{area.emoji} {t('progress_area_' + area.id, lang)}</span>
                       <span style={pr.barPct}>{area.pct}%</span>
                     </div>
                     <div style={pr.barTrack}>
@@ -268,7 +259,7 @@ export default function ProgressPanel({ mode, stars, childName, lang = 'en' }) {
                   return (
                     <div key={craft.id} style={pr.craftItem}>
                       <span style={{ ...pr.craftTick, color: done ? '#2d7a2d' : '#bbb' }} aria-hidden="true">{done ? '✅' : '○'}</span>
-                      <span style={{ ...pr.craftName, color: done ? '#1a0a2e' : '#999' }}>{t(`craft_${CRAFT_KEY_MAP[craft.id]}_title`, lang)}</span>
+                      <span style={{ ...pr.craftName, color: done ? '#1a0a2e' : '#999' }}>{t(`craft_${craft.id}_title`, lang)}</span>
                     </div>
                   )
                 })}
