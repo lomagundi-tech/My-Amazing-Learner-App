@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { LANGUAGES } from '../data/translations'
 import { t } from '../utils/i18n'
 
@@ -6,6 +6,13 @@ export default function LanguageSwitcher({ lang, onLangChange }) {
   const [open, setOpen]         = useState(false)
   const [search, setSearch]     = useState('')
   const [hoveredCode, setHover] = useState(null)
+  const activeCardRef           = useRef(null)
+
+  useEffect(() => {
+    if (open && activeCardRef.current) {
+      activeCardRef.current.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    }
+  }, [open])
 
   const current  = LANGUAGES.find((l) => l.code === lang) || LANGUAGES[0]
   const filtered = LANGUAGES.filter((l) => {
@@ -102,6 +109,7 @@ export default function LanguageSwitcher({ lang, onLangChange }) {
                 return (
                   <button
                     key={language.code}
+                    ref={isActive ? activeCardRef : null}
                     role="option"
                     aria-selected={isActive}
                     onClick={() => handleSelect(language.code)}
@@ -191,7 +199,7 @@ const s = {
     borderRadius:  'var(--radius-card)',
     width:         '100%',
     maxWidth:      '600px',
-    maxHeight:     '82vh',
+    maxHeight:     '90vh',
     display:       'flex',
     flexDirection: 'column',
     overflow:      'hidden',
@@ -282,25 +290,27 @@ const s = {
   // ── Language card grid ─────────────────────────────────────────
   grid: {
     display:             'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
-    gap:                 '10px',
-    padding:             '16px 20px',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+    gap:                 '8px',
+    padding:             '14px 16px',
     overflowY:           'auto',
     WebkitOverflowScrolling: 'touch',
+    flex:                1,
+    minHeight:           0,
   },
   langCard: {
     position:      'relative',
     display:       'flex',
     flexDirection: 'column',
     alignItems:    'center',
-    gap:           '6px',
-    padding:       '16px 10px 14px',
+    gap:           '4px',
+    padding:       '12px 8px 10px',
     borderRadius:  'var(--radius-card)',
     border:        '2px solid transparent',
     cursor:        'pointer',
     fontFamily:    "'Nunito', 'Noto Sans', sans-serif",
     transition:    'var(--transition)',
-    minHeight:     '100px',
+    minHeight:     '88px',
   },
   checkmark: {
     position:   'absolute',
@@ -311,9 +321,9 @@ const s = {
     color:      'var(--gold)',
   },
   flagLg: {
-    fontSize:     '2.25rem',
+    fontSize:     '1.85rem',
     lineHeight:   1,
-    marginBottom: '2px',
+    marginBottom: '1px',
   },
   langName: {
     fontWeight: 700,
