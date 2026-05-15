@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { LANGUAGES } from '../data/translations'
 import { t } from '../utils/i18n'
 
@@ -49,8 +50,8 @@ export default function LanguageSwitcher({ lang, onLangChange }) {
         <span style={s.chevron} aria-hidden="true">▾</span>
       </button>
 
-      {/* Modal overlay */}
-      {open && (
+      {/* Modal overlay — rendered via portal to escape header stacking context */}
+      {open && typeof document !== 'undefined' && createPortal(
         <div
           style={s.overlay}
           role="dialog"
@@ -141,7 +142,8 @@ export default function LanguageSwitcher({ lang, onLangChange }) {
             </div>
 
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )
