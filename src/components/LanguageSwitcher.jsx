@@ -10,9 +10,15 @@ export default function LanguageSwitcher({ lang, onLangChange }) {
   const activeCardRef           = useRef(null)
 
   useEffect(() => {
-    if (open && activeCardRef.current) {
-      activeCardRef.current.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    if (open) {
+      document.body.style.overflow = 'hidden'
+      if (activeCardRef.current) {
+        activeCardRef.current.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+      }
+    } else {
+      document.body.style.overflow = ''
     }
+    return () => { document.body.style.overflow = '' }
   }, [open])
 
   const current  = LANGUAGES.find((l) => l.code === lang) || LANGUAGES[0]
@@ -189,23 +195,23 @@ const s = {
     background:           'rgba(26,10,46,0.55)',
     backdropFilter:       'blur(6px)',
     WebkitBackdropFilter: 'blur(6px)',
-    zIndex:               999,
+    zIndex:               9999,
     display:              'flex',
-    flexDirection:        'column',
     alignItems:           'center',
-    justifyContent:       'flex-end',
-    animation:            'fadeUp 0.35s ease',
+    justifyContent:       'center',
+    padding:              '16px',
+    animation:            'fadeUp 0.25s ease',
   },
   modal: {
     background:    '#fff',
-    borderRadius:  '20px 20px 0 0',
+    borderRadius:  'var(--radius-card)',
     width:         '100%',
-    maxWidth:      '640px',
-    height:        '82vh',
+    maxWidth:      '520px',
+    maxHeight:     'min(560px, 85vh)',
     display:       'flex',
     flexDirection: 'column',
     overflow:      'hidden',
-    boxShadow:     '0 -8px 40px rgba(26,10,46,0.25)',
+    boxShadow:     '0 24px 64px rgba(26,10,46,0.35)',
   },
 
   // ── Modal header — plum→violet (matches parent hero gradient) ───
@@ -292,13 +298,14 @@ const s = {
   // ── Language card grid ─────────────────────────────────────────
   grid: {
     display:             'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
-    gap:                 '8px',
-    padding:             '14px 16px',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+    gap:                 '6px',
+    padding:             '12px 12px',
     overflowY:           'auto',
     WebkitOverflowScrolling: 'touch',
     flex:                1,
     minHeight:           0,
+    overscrollBehavior:  'contain',
   },
   langCard: {
     position:      'relative',
