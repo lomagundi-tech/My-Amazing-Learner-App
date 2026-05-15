@@ -220,7 +220,7 @@ function PricingSection({ onTabChange, onModeSwitch, lang = 'en' }) {
 
 /* ── Parent Home ────────────────────────────────────────────── */
 function ParentHome({ onTabChange, onModeSwitch, onEditName, childName, stars, streak, onStarsChange, lang = 'en' }) {
-  const name = childName || 'your learner'
+  const name = childName || t('parent_default_name', lang)
   const [confirmClear, setConfirmClear] = useState(false)
 
   function handleClearData() {
@@ -238,29 +238,29 @@ function ParentHome({ onTabChange, onModeSwitch, onEditName, childName, stars, s
       <div style={s.welcomeCard}>
         {childName && (
           <div style={s.profileRow}>
-            <span style={s.profileLabel}>Editing profile for: <strong>{childName}</strong></span>
+            <span style={s.profileLabel}>{t('parent_editing_profile', lang)} <strong>{childName}</strong></span>
             <button onClick={onEditName} style={s.editNameBtn}>{t('parent_edit_name', lang)}</button>
           </div>
         )}
         <div style={s.welcomeTop}>
           <div>
             <h2 style={{ ...s.heading, color: 'var(--plum)' }}>
-              {t('parent_welcome_back', lang)}{childName ? `, ${childName}'s parent` : ''}! 🦉
+              {t('parent_welcome_back', lang)}{childName ? `, ${t('parent_name_label', lang).replace('{name}', childName)}` : ''}! 🦉
             </h2>
             <p style={s.intro}>
-              Track {name}&apos;s learning, chat with Sparky, and explore activities matched to their level.
+              {t('parent_hero_desc', lang).replace('{name}', name)}
             </p>
           </div>
           {streak > 0 && (
             <div style={s.streakBadge}>
               <span style={s.streakFlame}>🔥</span>
               <span style={s.streakNum}>{streak}</span>
-              <span style={s.streakLabel}>day streak</span>
+              <span style={s.streakLabel}>{t('streak_days', lang)}</span>
             </div>
           )}
         </div>
         <div style={s.quickStats}>
-          <div style={s.statPill}>⭐ {stars} stars earned</div>
+          <div style={s.statPill}>⭐ {stars} {t('stars_earned', lang)}</div>
           <button className="btn btn-primary" onClick={() => onTabChange(1)} style={{ fontSize: '0.875rem' }}>
             {t('parent_open_sparky', lang)}
           </button>
@@ -340,7 +340,9 @@ function ParentHome({ onTabChange, onModeSwitch, onEditName, childName, stars, s
 
 /* ── Child Home ─────────────────────────────────────────────── */
 function ChildHome({ onTabChange, childName, stars, streak, onStarsChange, lang = 'en' }) {
-  const greeting = childName ? `Hi ${childName}!` : 'Hi there!'
+  const greeting = childName
+    ? t('child_hi_name', lang).replace('{name}', childName)
+    : t('child_hi_there', lang)
   const activities = [
     { labelKey: 'child_activity_sparky', tab: 1, bg: 'var(--violet)', descKey: 'child_activity_sparky_desc' },
     { labelKey: 'child_activity_quiz', tab: 2, bg: 'var(--coral)', descKey: 'child_activity_quiz_desc' },
@@ -356,8 +358,8 @@ function ChildHome({ onTabChange, childName, stars, streak, onStarsChange, lang 
         <span style={s.childEmoji} aria-hidden="true">🦄</span>
         <h2 style={{ ...s.heading, color: 'var(--coral)' }}>{greeting} {t('child_ready_headline', lang)}</h2>
         <div style={s.childStats}>
-          {stars > 0 && <span style={s.statPill}>⭐ {stars} stars</span>}
-          {streak > 1 && <span style={{ ...s.statPill, background: 'var(--coral)' }}>🔥 {streak} day streak!</span>}
+          {stars > 0 && <span style={s.statPill}>⭐ {stars} {t('child_stars_label', lang)}</span>}
+          {streak > 1 && <span style={{ ...s.statPill, background: 'var(--coral)' }}>🔥 {streak} {t('child_streak_label', lang)}</span>}
         </div>
       </div>
 
