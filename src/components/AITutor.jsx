@@ -154,14 +154,14 @@ const styles = {
     padding: '8px 16px', borderRadius: 'var(--radius-pill)',
     background: 'rgba(107,63,160,0.08)', border: '1px solid rgba(107,63,160,0.2)',
     color: 'var(--violet)', fontSize: '0.8rem', fontWeight: 600,
-    cursor: 'pointer', fontFamily: "'Nunito', sans-serif",
+    cursor: 'pointer', fontFamily: "'Nunito', 'Noto Sans', sans-serif",
     transition: 'background 0.2s ease', minHeight: '44px',
   },
   form: { display: 'flex', gap: '10px' },
   input: {
     flex: 1, padding: '14px 20px', borderRadius: 'var(--radius-pill)',
     border: '2px solid rgba(107,63,160,0.2)', fontSize: '0.95rem',
-    fontFamily: "'Nunito', sans-serif", outline: 'none', color: 'var(--text-dark)',
+    fontFamily: "'Nunito', 'Noto Sans', sans-serif", outline: 'none', color: 'var(--text-dark)',
     background: '#fff',
   },
   sendBtn: {

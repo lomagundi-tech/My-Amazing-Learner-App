@@ -92,7 +92,7 @@ const styles = {
   },
   badgeCount: {
     background: 'var(--violet)', color: '#fff',
-    fontSize: '0.75rem', fontFamily: "'Nunito', sans-serif",
+    fontSize: '0.75rem', fontFamily: "'Nunito', 'Noto Sans', sans-serif",
     padding: '4px 12px', borderRadius: 'var(--radius-pill)',
   },
   grid: {

@@ -127,7 +127,7 @@ const styles = {
   shopBtn: {
     flex: 1, padding: '10px 14px', background: 'rgba(255,255,255,0.25)',
     backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.4)',
-    borderRadius: 'var(--radius-pill)', color: '#fff', fontFamily: "'Nunito', sans-serif",
+    borderRadius: 'var(--radius-pill)', color: '#fff', fontFamily: "'Nunito', 'Noto Sans', sans-serif",
     fontWeight: 700, fontSize: '0.8rem', textAlign: 'center',
     display: 'block', minHeight: '44px', lineHeight: '24px',
   },

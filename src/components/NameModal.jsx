@@ -71,7 +71,7 @@ const styles = {
   input: {
     padding: '14px 20px', borderRadius: 'var(--radius-pill)',
     border: '2px solid var(--violet)', fontSize: '1rem',
-    fontFamily: "'Nunito', sans-serif", outline: 'none',
+    fontFamily: "'Nunito', 'Noto Sans', sans-serif", outline: 'none',
     color: 'var(--text-dark)', textAlign: 'center',
   },
   btn: {
@@ -84,7 +84,7 @@ const styles = {
   skip: {
     marginTop: '12px', background: 'none', border: 'none',
     color: 'var(--text-mid)', fontSize: '0.85rem',
-    cursor: 'pointer', fontFamily: "'Nunito', sans-serif",
+    cursor: 'pointer', fontFamily: "'Nunito', 'Noto Sans', sans-serif",
     textDecoration: 'underline',
   },
 }

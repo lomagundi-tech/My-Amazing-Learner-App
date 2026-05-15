@@ -126,7 +126,7 @@ const s = {
   input: {
     padding: '12px 16px', borderRadius: 'var(--radius-pill)',
     border: '2px solid rgba(107,63,160,0.25)', fontSize: '1rem',
-    fontFamily: "'Nunito', sans-serif", outline: 'none', width: '100%',
+    fontFamily: "'Nunito', 'Noto Sans', sans-serif", outline: 'none', width: '100%',
     boxSizing: 'border-box',
   },
   errorText: { color: '#E63737', fontSize: '0.8rem', margin: 0 },

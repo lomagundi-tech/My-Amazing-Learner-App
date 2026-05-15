@@ -49,7 +49,7 @@ const styles = {
     border: 'none',
     cursor: 'pointer',
     fontSize: '0.875rem',
-    fontFamily: "'Nunito', sans-serif",
+    fontFamily: "'Nunito', 'Noto Sans', sans-serif",
     transition: 'background 0.25s ease, color 0.25s ease',
     minHeight: '44px',
     whiteSpace: 'nowrap',

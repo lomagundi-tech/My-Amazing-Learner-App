@@ -1012,7 +1012,7 @@ const snap = {
     borderRadius: 'var(--radius-pill)',
     fontSize: '0.82rem',
     fontWeight: 700,
-    fontFamily: "'Nunito', sans-serif",
+    fontFamily: "'Nunito', 'Noto Sans', sans-serif",
   },
   tip: {
     display: 'flex',
@@ -1246,7 +1246,7 @@ const st = {
   moduleTab:     {
     flex: 1, minWidth: '120px', display: 'flex', alignItems: 'center', gap: '6px',
     padding: '12px 16px', borderRadius: 'var(--radius-card)', border: '2px solid',
-    cursor: 'pointer', fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: '0.85rem',
+    cursor: 'pointer', fontFamily: "'Nunito', 'Noto Sans', sans-serif", fontWeight: 700, fontSize: '0.85rem',
     transition: 'all 0.2s ease', minHeight: '52px',
   },
   moduleTabLabel: { flex: 1, textAlign: 'left' },
@@ -1259,7 +1259,7 @@ const st = {
   actCard: {
     display: 'flex', flexDirection: 'column', gap: '8px', padding: '18px',
     borderRadius: 'var(--radius-card)', border: '2px solid', textAlign: 'left',
-    fontFamily: "'Nunito', sans-serif", transition: 'all 0.2s ease', position: 'relative',
+    fontFamily: "'Nunito', 'Noto Sans', sans-serif", transition: 'all 0.2s ease', position: 'relative',
   },
   actCardTop:    { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' },
   actEmoji:      { fontSize: '1.8rem' },
@@ -1285,7 +1285,7 @@ const st = {
   voucherPct:    { fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: '1.4rem' },
   voucherCode:   { fontFamily: 'monospace', fontSize: '0.9rem', background: 'rgba(255,255,255,0.2)', padding: '6px 10px', borderRadius: '6px', letterSpacing: '0.1em', fontWeight: 700 },
   voucherExpiry: { fontSize: '0.72rem', opacity: 0.8 },
-  voucherBtn:    { padding: '8px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', fontFamily: "'Nunito', sans-serif" },
+  voucherBtn:    { padding: '8px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', fontFamily: "'Nunito', 'Noto Sans', sans-serif" },
   redeemNote:    { fontSize: '0.68rem', opacity: 0.75, lineHeight: 1.4 },
 
   // Cap meter
@@ -1316,8 +1316,8 @@ const st = {
   quizProgressFill:  { height: '100%', background: 'var(--violet)', borderRadius: '2px', transition: 'width 0.3s ease' },
   questionText:  { fontSize: '1rem', fontWeight: 700, color: 'var(--text-dark)', marginBottom: '16px', lineHeight: 1.4 },
   optionsGrid:   { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' },
-  optionBtn:     { padding: '12px', borderRadius: '12px', border: '2px solid', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer', fontFamily: "'Nunito', sans-serif", transition: 'all 0.15s ease', minHeight: '52px' },
-  nextBtn:       { background: 'var(--plum)', color: '#fff', border: 'none', borderRadius: 'var(--radius-pill)', padding: '12px 28px', fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', marginTop: '8px' },
+  optionBtn:     { padding: '12px', borderRadius: '12px', border: '2px solid', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer', fontFamily: "'Nunito', 'Noto Sans', sans-serif", transition: 'all 0.15s ease', minHeight: '52px' },
+  nextBtn:       { background: 'var(--plum)', color: '#fff', border: 'none', borderRadius: 'var(--radius-pill)', padding: '12px 28px', fontFamily: "'Nunito', 'Noto Sans', sans-serif", fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', marginTop: '8px' },
 
   resultsBox:   { textAlign: 'center', padding: '16px 0' },
   resultScore:  { fontSize: '3rem', fontFamily: "'Baloo 2', cursive", fontWeight: 800, color: 'var(--plum)' },
@@ -1329,14 +1329,14 @@ const st = {
   freqBadge:    { display: 'inline-block', background: 'rgba(107,63,160,0.08)', borderRadius: '20px', padding: '4px 12px', fontSize: '0.78rem', fontWeight: 700, color: 'var(--violet)', marginBottom: '12px' },
 
   flashcardInputRow: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' },
-  flashInput:   { flex: 1, minWidth: '120px', padding: '10px 14px', borderRadius: '10px', border: '2px solid rgba(107,63,160,0.2)', fontSize: '0.875rem', fontFamily: "'Nunito', sans-serif", color: 'var(--text-dark)', outline: 'none', boxSizing: 'border-box' },
+  flashInput:   { flex: 1, minWidth: '120px', padding: '10px 14px', borderRadius: '10px', border: '2px solid rgba(107,63,160,0.2)', fontSize: '0.875rem', fontFamily: "'Nunito', 'Noto Sans', sans-serif", color: 'var(--text-dark)', outline: 'none', boxSizing: 'border-box' },
   cardGrid:     { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '10px', marginTop: '8px', maxHeight: '220px', overflowY: 'auto' },
   flashcard:    { background: 'linear-gradient(135deg, var(--plum), var(--violet))', borderRadius: '12px', padding: '14px 12px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', position: 'relative', minHeight: '80px', justifyContent: 'center' },
   flashCardText: { color: '#fff', fontWeight: 700, fontSize: '0.85rem', textAlign: 'center' },
   flashCardHint: { color: 'rgba(255,255,255,0.6)', fontSize: '0.65rem' },
   flashDeleteBtn: { position: 'absolute', top: '4px', right: '4px', background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', fontSize: '0.65rem', display: 'flex', alignItems: 'center', justifyContent: 'center' },
 
-  chip: { padding: '6px 14px', borderRadius: 'var(--radius-pill)', border: 'none', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer', fontFamily: "'Nunito', sans-serif", transition: 'all 0.15s ease', minHeight: '36px' },
+  chip: { padding: '6px 14px', borderRadius: 'var(--radius-pill)', border: 'none', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer', fontFamily: "'Nunito', 'Noto Sans', sans-serif", transition: 'all 0.15s ease', minHeight: '36px' },
 
   // Module D modal styles
   inputGroup:      { marginBottom: '16px' },
@@ -1348,7 +1348,7 @@ const st = {
   stepNumber:      { fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-mid)', marginBottom: '12px' },
   stepInstruction: { fontSize: '1.05rem', fontWeight: 700, color: 'var(--plum)', lineHeight: 1.6, margin: 0 },
   storyPreview:    { background: '#f0faf0', borderRadius: '12px', padding: '14px 16px', fontSize: '0.875rem', color: 'var(--text-dark)', lineHeight: 1.6, marginTop: '12px', marginBottom: '8px' },
-  ratingBtn:       { flex: 1, padding: '10px 6px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: '0.65rem', transition: 'all 0.15s ease', minHeight: '52px', textAlign: 'center' },
+  ratingBtn:       { flex: 1, padding: '10px 6px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontFamily: "'Nunito', 'Noto Sans', sans-serif", fontWeight: 700, fontSize: '0.65rem', transition: 'all 0.15s ease', minHeight: '52px', textAlign: 'center' },
   phraseCard:      { border: '2px solid', borderRadius: '12px', padding: '14px 16px', marginBottom: '8px' },
   clueCard:        { background: '#f5f0fa', borderRadius: '10px', padding: '12px 14px', fontSize: '0.875rem', color: 'var(--text-dark)', lineHeight: 1.6, marginBottom: '10px' },
   answerBox:       { background: '#f0faf0', borderRadius: '14px', padding: '20px', marginTop: '16px', border: '2px solid var(--mint)' },

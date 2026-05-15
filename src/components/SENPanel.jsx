@@ -120,7 +120,7 @@ const styles = {
     background: 'transparent', border: 'none', color: 'var(--coral)',
     fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer',
     textDecoration: 'underline', padding: '0', minHeight: '44px',
-    fontFamily: "'Nunito', sans-serif",
+    fontFamily: "'Nunito', 'Noto Sans', sans-serif",
   },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' },
   card: {
@@ -128,7 +128,7 @@ const styles = {
     padding: '20px', borderRadius: 'var(--radius-card)',
     border: '2px solid', cursor: 'pointer', textAlign: 'left',
     transition: 'all 0.2s ease', minHeight: '44px',
-    fontFamily: "'Nunito', sans-serif",
+    fontFamily: "'Nunito', 'Noto Sans', sans-serif",
   },
   cardTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   toolEmoji: { fontSize: '2rem' },

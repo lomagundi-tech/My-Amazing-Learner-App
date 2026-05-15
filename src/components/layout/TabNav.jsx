@@ -72,7 +72,7 @@ const styles = {
     borderRadius: 'var(--radius-pill)',
     border: 'none',
     cursor: 'pointer',
-    fontFamily: "'Nunito', sans-serif",
+    fontFamily: "'Nunito', 'Noto Sans', sans-serif",
     fontSize: '0.875rem',
     transition: 'background 0.2s ease, color 0.2s ease, transform 0.2s ease',
     whiteSpace: 'nowrap',

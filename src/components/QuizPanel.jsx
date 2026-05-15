@@ -151,13 +151,13 @@ const styles = {
   starCount: {
     background: 'var(--gold)', color: 'var(--text-dark)',
     padding: '6px 16px', borderRadius: 'var(--radius-pill)',
-    fontWeight: 700, fontSize: '0.875rem', fontFamily: "'Nunito', sans-serif",
+    fontWeight: 700, fontSize: '0.875rem', fontFamily: "'Nunito', 'Noto Sans', sans-serif",
   },
   levelRow: { display: 'flex', gap: '10px', flexWrap: 'wrap' },
   levelBtn: {
     flex: 1, minWidth: '100px', padding: '10px 16px',
     borderRadius: 'var(--radius-pill)', border: '2px solid',
-    cursor: 'pointer', fontFamily: "'Nunito', sans-serif",
+    cursor: 'pointer', fontFamily: "'Nunito', 'Noto Sans', sans-serif",
     fontWeight: 700, fontSize: '0.875rem', transition: 'all 0.2s ease',
     minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
   },
@@ -167,7 +167,7 @@ const styles = {
     display: 'flex', alignItems: 'center', gap: '5px',
     padding: '7px 14px', borderRadius: 'var(--radius-pill)',
     border: '2px solid', cursor: 'pointer',
-    fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: '0.8rem',
+    fontFamily: "'Nunito', 'Noto Sans', sans-serif", fontWeight: 700, fontSize: '0.8rem',
     transition: 'all 0.2s ease', minHeight: '44px',
   },
   subjectCount: {
@@ -197,7 +197,7 @@ const styles = {
   optionsGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' },
   optionBtn: {
     padding: '16px 12px', borderRadius: '14px', cursor: 'pointer',
-    fontFamily: "'Nunito', sans-serif", fontWeight: 700, fontSize: '1rem',
+    fontFamily: "'Nunito', 'Noto Sans', sans-serif", fontWeight: 700, fontSize: '1rem',
     transition: 'all 0.2s ease', minHeight: '56px',
     boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
   },
@@ -209,7 +209,7 @@ const styles = {
     alignSelf: 'flex-end', padding: '12px 24px',
     background: 'var(--plum)', color: '#fff', border: 'none',
     borderRadius: 'var(--radius-pill)', cursor: 'pointer',
-    fontFamily: "'Nunito', sans-serif", fontWeight: 700,
+    fontFamily: "'Nunito', 'Noto Sans', sans-serif", fontWeight: 700,
     fontSize: '0.95rem', minHeight: '44px',
   },
 }
