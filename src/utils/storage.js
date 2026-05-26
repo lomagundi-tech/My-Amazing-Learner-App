@@ -29,6 +29,7 @@ const KEYS = {
   // Language preference
   language:            'mal_language',
   // Phase 4 — My Area
+  legendScore:         'mal_legend_score',
   myAreaCoords:        'mal_myarea_coords',
   myAreaEnabled:       'mal_myarea_enabled',
   myAreaFacts:         'mal_myarea_facts',
@@ -384,6 +385,8 @@ export function startTrail(trailId, allStopsData) {
     discountCode: null,
     discountCodeIssuedAt: null,
     discountCodeExpiresAt: null,
+    grandQuizScore: null,
+    grandQuizBadgeId: null,
     startedAt: new Date().toISOString(),
     completedAt: null,
   })
@@ -399,17 +402,21 @@ export function markTrailStopComplete(stopNumber) {
   if (!progress) return null
   if (progress.stopsCompleted.includes(stopNumber)) return { stopsCompleted: progress.stopsCompleted, status: progress.status }
   const stopsCompleted = [...progress.stopsCompleted, stopNumber]
-  let status = progress.status
-  if (stopsCompleted.length >= 6 && status === 'IN_PROGRESS') status = 'REWARD_UNLOCKED'
-  if (stopsCompleted.length === 8) status = 'FULLY_COMPLETED'
-  const updated = {
-    ...progress,
-    stopsCompleted,
-    status,
-    completedAt: stopsCompleted.length === 8 ? new Date().toISOString() : progress.completedAt,
-  }
-  set(KEYS.trailProgress, updated)
+  const status = stopsCompleted.length === 8 ? 'ALL_SCANS_COMPLETE' : progress.status
+  set(KEYS.trailProgress, { ...progress, stopsCompleted, status })
   return { stopsCompleted, status }
+}
+
+export function completeGrandQuiz(score, badgeId) {
+  const progress = getTrailProgress()
+  if (!progress) return
+  set(KEYS.trailProgress, {
+    ...progress,
+    status: 'FULLY_COMPLETED',
+    grandQuizScore: score,
+    grandQuizBadgeId: badgeId,
+    completedAt: new Date().toISOString(),
+  })
 }
 
 export function saveDiscountCode(code, issuedAt, expiresAt) {
@@ -458,4 +465,16 @@ export function clearMyArea() {
   set(KEYS.myAreaFacts,     [])
   set(KEYS.myAreaCompleted, [])
   set(KEYS.myAreaUnlock,    null)
+}
+
+// ── Local Legend Score (v3.0) ──────────────────────────────────
+// Tracks cumulative My Area quiz accuracy across all sessions.
+
+export function getLegendScore()  { return get(KEYS.legendScore, { answered: 0, correct: 0 }) }
+export function recordLegendAnswer(wasCorrect) {
+  const current = getLegendScore()
+  set(KEYS.legendScore, {
+    answered: current.answered + 1,
+    correct:  current.correct + (wasCorrect ? 1 : 0),
+  })
 }

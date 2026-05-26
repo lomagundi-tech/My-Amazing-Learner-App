@@ -11,7 +11,10 @@ export const BADGES = [
   { id: 'week_warrior',    label: 'Week Warrior',       emoji: '🔥', earned: false, unlock: '7-day learning streak' },
   { id: 'fortnight_champ', label: 'Fortnight Champion', emoji: '⚡', earned: false, unlock: '14-day learning streak' },
   { id: 'amazing_month',   label: 'Amazing Month',      emoji: '🏆', earned: false, unlock: '30-day learning streak' },
-  // Phase 4 — SRS v2 badges
-  { id: 'explorer_full',  label: 'Full Explorer',       emoji: '🧭', earned: false, unlock: 'Complete all 8 HMS Alliance Trail stops' },
-  { id: 'local_legend',   label: 'Local Legend',        emoji: '📍', earned: false, unlock: 'Complete all local area facts in My Area' },
+  // Phase 4 — SRS v3.0 trail badges (awarded by Grand Quiz score)
+  { id: 'explorer_full',        label: 'Full Explorer',       emoji: '🧭', earned: false, unlock: 'Score 8/8 on the HMS Alliance Grand Quiz' },
+  { id: 'explorer_amazing',     label: 'Amazing Explorer',    emoji: '⭐', earned: false, unlock: 'Score 5–7/8 on the HMS Alliance Grand Quiz' },
+  { id: 'explorer_adventurer',  label: 'Brilliant Adventurer',emoji: '🌟', earned: false, unlock: 'Score 1–4/8 on the HMS Alliance Grand Quiz' },
+  { id: 'brave_explorer',       label: 'Brave Explorer',      emoji: '🦁', earned: false, unlock: 'Complete the HMS Alliance Grand Quiz' },
+  { id: 'local_legend',         label: 'Local Legend',        emoji: '📍', earned: false, unlock: 'Complete all local area facts in My Area' },
 ]

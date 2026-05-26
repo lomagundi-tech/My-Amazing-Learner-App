@@ -10,6 +10,7 @@ import {
   getMyAreaTodayIndex,
   clearMyArea,
   addStars, earnBadge,
+  getLegendScore, recordLegendAnswer,
 } from '../utils/storage'
 import { t } from '../utils/i18n'
 
@@ -34,6 +35,8 @@ export default function MyAreaPanel({ onStarsChange, onBadgesChange, lang = 'en'
   const [quizResult, setQuizResult]         = useState(null)
   const [discoveredCount, setDiscoveredCount] = useState(0)
   const [showLegendOverlay, setShowLegendOverlay] = useState(false)
+  const [basePaid, setBasePaid]                   = useState(false)
+  const [legendScore, setLegendScore]             = useState(() => getLegendScore())
 
   useEffect(() => {
     if (!getMyAreaEnabled()) return
@@ -151,35 +154,69 @@ export default function MyAreaPanel({ onStarsChange, onBadgesChange, lang = 'en'
 
   function handleFactOpen(fact, realIndex) {
     if (realIndex > todayIndex) return
+    const alreadyDone = completed.includes(fact.id)
+    if (!alreadyDone) {
+      // Base stars awarded on card open, before quiz (SRS v3.0)
+      addStars(fact.starsReward)
+      onStarsChange()
+    }
     setActiveFact(fact)
     setQuizSelected(null)
     setQuizResult(null)
     setShowLegendOverlay(false)
+    setBasePaid(false)  // reset: no quiz attempt submitted yet this session
     setScreen('fact')
   }
 
   function handleQuizAnswer(selectedIndex) {
     if (quizResult !== null) return
     setQuizSelected(selectedIndex)
-    const correct       = selectedIndex === activeFact.correctAnswer
-    const alreadyDone   = completed.includes(activeFact.id)
-    setQuizResult(correct ? 'correct' : 'wrong')
+    const correct     = selectedIndex === activeFact.correctAnswer
+    const alreadyDone = completed.includes(activeFact.id)
 
-    if (correct && !alreadyDone) {
-      addStars(activeFact.starsReward)
-      onStarsChange()
-      markFactComplete(activeFact.id)
-      const newCompleted = getMyAreaCompleted()
-      setCompleted(newCompleted)
-      if (newCompleted.length >= facts.length) {
-        const gained = earnBadge('local_legend')
-        if (gained) {
-          onBadgesChange()
-          launchConfetti()
-          setShowLegendOverlay(true)
+    if (!alreadyDone) {
+      if (!basePaid) {
+        // First quiz attempt this session — record legend score
+        recordLegendAnswer(correct)
+        setLegendScore(getLegendScore())
+        setBasePaid(true)
+      }
+      // Note: base stars already awarded when card was opened
+
+      if (correct) {
+        if (activeFact.bonusStars) {
+          addStars(activeFact.bonusStars)
+          onStarsChange()
+        }
+        markFactComplete(activeFact.id)
+        const newCompleted = getMyAreaCompleted()
+        setCompleted(newCompleted)
+        if (newCompleted.length >= facts.length) {
+          const gained = earnBadge('local_legend')
+          if (gained) { onBadgesChange(); launchConfetti(); setShowLegendOverlay(true) }
+        }
+      } else if (basePaid) {
+        // Retry wrong — mark card complete (SRS v3.0)
+        markFactComplete(activeFact.id)
+        const newCompleted = getMyAreaCompleted()
+        setCompleted(newCompleted)
+        if (newCompleted.length >= facts.length) {
+          const gained = earnBadge('local_legend')
+          if (gained) { onBadgesChange(); launchConfetti(); setShowLegendOverlay(true) }
         }
       }
     }
+
+    setQuizResult(correct ? 'correct' : 'wrong')
+  }
+
+  function getLegendTier(correct, answered) {
+    if (answered === 0) return null
+    const pct = (correct / answered) * 100
+    if (pct === 100)  return 'Perfect Local Legend'
+    if (pct >= 75)    return 'Neighbourhood Scholar'
+    if (pct >= 50)    return 'Local Learner'
+    return 'Curious Explorer'
   }
 
   const availableCategories = ['All', ...new Set(facts.map((f) => f.category))]
@@ -266,6 +303,20 @@ export default function MyAreaPanel({ onStarsChange, onBadgesChange, lang = 'en'
             </div>
           )}
 
+          {/* Local Legend Score (v3.0) */}
+          {legendScore.answered > 0 && (
+            <div style={s.legendScoreCard}>
+              <span style={s.legendScoreIcon}>🏆</span>
+              <div style={s.legendScoreBody}>
+                <p style={s.legendScoreLabel}>{getLegendTier(legendScore.correct, legendScore.answered)}</p>
+                <p style={s.legendScoreNum}>{legendScore.correct}/{legendScore.answered} correct</p>
+              </div>
+              <span style={s.legendScorePct}>
+                {Math.round((legendScore.correct / legendScore.answered) * 100)}%
+              </span>
+            </div>
+          )}
+
           {/* Category filter chips */}
           <div style={s.catRow}>
             {availableCategories.map((cat) => (
@@ -326,7 +377,7 @@ export default function MyAreaPanel({ onStarsChange, onBadgesChange, lang = 'en'
                       <p style={s.factCardLocation}>{fact.locationName}</p>
                       <div style={s.factCardMeta}>
                         <span style={s.currTag}>{t(`myarea_cat_${fact.category.toLowerCase()}`, lang)}</span>
-                        {isUnlocked && !isDone && <span style={s.starsChip}>+{fact.starsReward}⭐</span>}
+                        {isUnlocked && !isDone && <span style={s.starsChip}>+{fact.starsReward + (fact.bonusStars || 0)}⭐</span>}
                         {isDone && <span style={s.doneLabel}>{t('myarea_fact_completed', lang)}</span>}
                         {isToday && <span style={s.todayBadge}>{t('myarea_fact_today', lang)}</span>}
                         {!isUnlocked && (
@@ -455,11 +506,8 @@ export default function MyAreaPanel({ onStarsChange, onBadgesChange, lang = 'en'
 
             {quizResult === 'correct' && (
               <div style={s.correctFeedback}>
-                {!alreadyDone && <p style={s.correctMsg}>+{activeFact.starsReward} Stars! ⭐</p>}
-                {!alreadyDone && (
-                  <p style={{ color: 'var(--text-mid)', fontSize: '0.8rem', marginBottom: 12 }}>
-                    {activeFact.curriculumLink}
-                  </p>
+                {!alreadyDone && activeFact.bonusStars > 0 && (
+                  <p style={s.correctMsg}>+{activeFact.bonusStars} Bonus Stars! ⭐</p>
                 )}
                 <button style={{ ...s.btn, background: 'var(--plum)' }} onClick={() => { setScreen('feed'); setActiveFact(null) }}>
                   {t('myarea_back', lang)}
@@ -470,6 +518,12 @@ export default function MyAreaPanel({ onStarsChange, onBadgesChange, lang = 'en'
             {quizResult === 'wrong' && (
               <div style={s.wrongFeedback}>
                 <p style={s.wrongMsg}>{t('myarea_quiz_wrong', lang)}</p>
+                {activeFact.sparky_explanation && (
+                  <div style={s.sparkyExplanation}>
+                    <span style={s.sparkyAvatar}>🦊</span>
+                    <p style={s.sparkyText}>{activeFact.sparky_explanation}</p>
+                  </div>
+                )}
                 <button
                   style={{ ...s.btn, background: 'var(--coral)' }}
                   onClick={() => { setQuizSelected(null); setQuizResult(null) }}
@@ -544,4 +598,17 @@ const s = {
   correctMsg:      { color: 'var(--mint)', fontWeight: 700, fontSize: '1.3rem', marginBottom: 4 },
   wrongMsg:        { color: 'var(--coral)', fontWeight: 600, marginBottom: 12 },
   hintText:        { textAlign: 'center', color: 'var(--text-mid)', fontSize: '0.85rem', marginTop: 10 },
+
+  // Local Legend Score card (v3.0)
+  legendScoreCard:  { display: 'flex', alignItems: 'center', gap: 12, background: 'linear-gradient(135deg, var(--plum) 0%, var(--violet) 100%)', borderRadius: 14, padding: '12px 16px', marginBottom: 16, boxShadow: 'var(--shadow-small)' },
+  legendScoreIcon:  { fontSize: 28, flexShrink: 0 },
+  legendScoreBody:  { flex: 1 },
+  legendScoreLabel: { color: 'rgba(255,255,255,0.8)', fontSize: '0.75rem', fontWeight: 600, margin: 0, textTransform: 'uppercase', letterSpacing: '0.04em' },
+  legendScoreNum:   { color: '#fff', fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: '1.2rem', margin: '2px 0 0' },
+  legendScorePct:   { color: 'rgba(255,255,255,0.9)', fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: '1.5rem', flexShrink: 0 },
+
+  // Sparky wrong-answer explanation (v3.0)
+  sparkyExplanation: { display: 'flex', gap: 12, alignItems: 'flex-start', background: 'rgba(61,26,94,0.06)', border: '1px solid rgba(61,26,94,0.15)', borderRadius: 14, padding: '14px 16px', margin: '0 0 16px', textAlign: 'left' },
+  sparkyAvatar:      { fontSize: 28, flexShrink: 0, lineHeight: 1 },
+  sparkyText:        { fontSize: '0.9rem', lineHeight: 1.6, color: 'var(--text-dark)', margin: 0, fontStyle: 'italic' },
 }

@@ -79,3 +79,4 @@ _dev/
 # Confidential client documents + local notes
 *.pdf
 read
+docs/
